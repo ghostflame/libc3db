@@ -1,0 +1,35 @@
+VERSION 1 FORMAT
+================
+
+Offset		Len		What
+0			4		Magic number, 'CCCC'
+4			2		Database version
+6			2		Header size
+8			4		Config checksum
+12			2		Config block count
+14			2		Empty
+16			16		Config block { u32 count1, u32 interval1, u64 offset1 }
+32			16		Config block { u32 count2, u32 interval2, u64 offset2 }
+...
+
+offset1		20		Bucket { u32 timestamp, u32 count, flt sum, flt min, flt max }
+...
+offset2		20		Bucket { u32 timestamp, u32 count, flt sum, flt min, flt max }
+...
+
+offset1 = after all the configs
+offset2 = offset1 + ( sizeof( Bucket ) * count1 )
+...
+
+
+Open the DB and compare config checksums.  If they don't match, we cannot write.
+Get offset1 and work out where each ts will go.  Read those buckets out.
+Get offset2 and work out where each ts will go.  Read those buckets out.
+
+Update the buckets with as many points as necessary.
+
+Write those offsets back.  Close DB.
+
+
+
+

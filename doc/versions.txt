@@ -1,0 +1,10 @@
+Handling Versions
+=================
+
+The basic principle is that c3db_open and c3db_create can handle any and all
+versions of trivalent database.
+
+Once the version of the database has been established, the functions to write
+to it are assigned within the handle.
+
+
