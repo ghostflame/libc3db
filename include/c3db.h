@@ -76,6 +76,7 @@ enum c3db_errnums
 	C3E_BAD_RANGE,
 	C3E_BAD_METRIC,
 	C3E_BAD_RETAIN,
+	C3E_HDR_READ_FAIL,
 	C3E_MAX
 };
 

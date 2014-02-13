@@ -70,7 +70,7 @@ C3HDL *c3db_open( char *path, int rw )
 
 	if( read( h->fd, buf, 8 ) != 8 )
 	{
-	  	GETERRNO;
+		h->errnum = C3E_HDR_READ_FAIL;
 		return h;
 	}
 

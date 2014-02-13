@@ -46,7 +46,8 @@ static char *c3db_error_strings[C3E_MAX] =
 	"Read-only handle",
 	"Bad file range",
 	"Bad request metric",
-	"Bad retention string"
+	"Bad retention string",
+	"Failed to read header"
 };
 
 char *c3db_errstr( int errnum )

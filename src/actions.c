@@ -67,7 +67,27 @@ int c3db_close( C3HDL *h )
 	if( !h )
 		return C3E_BAD_HANDLE;
 
-	return (h->f_close)( h );
+	if( h->f_close )
+		return (h->f_close)( h );
+
+	// OK, now what - we have a file handle maybe
+	if( h->fd >= 0 )
+	{
+		close( h->fd );
+		h->fd = -1;
+	}
+
+	// we probably have a path
+	if( h->fullpath )
+	{
+		free( h->fullpath );
+		h->fullpath = NULL;
+	}
+
+	// that will do - further leaks are
+	// something to track down later
+	free( h );
+	return 0;
 }
 
 int c3db_dump( C3HDL *h, FILE *to, int show_empty )

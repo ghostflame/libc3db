@@ -40,6 +40,7 @@ versions:
 
 $(LIBT): $(OBJS)
 	$(CC) -o $(LIBT) $(LFLAGS) $(OBJS) $(DBVO)
+	@( cd ../lib; ln -s $(LIB) $(LIB).$(MAXV) )
 	@echo "Built C3/trivalent database lib."
 
 $(RKVT): $(OBJS)
@@ -64,6 +65,7 @@ uninstall:
 
 clean:
 	@-for d in $(DBVS); do ( cd $$d; $(MAKE) clean ); done
-	@rm -f core* *.core $(OBJS) $(LIBT) $(RKVT)
+	@rm -f core* *.core $(OBJS)
+	@( cd ../lib && rm -f $(LIB) $(LIB).$(MAXV) $(RKV) )
 
 
