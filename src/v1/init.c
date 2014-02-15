@@ -77,6 +77,7 @@ int c3db_v1_create( C3HDL *h, char *retention )
 
 	// the first one is easy
 	cfgs[0].offset = hdr->hsize;
+	conf           = cfgs;
 
 	// the rest are incremental
 	for( i = 1; i < cct; i++ )

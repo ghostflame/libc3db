@@ -14,6 +14,9 @@ all: $(OUT)
 debug: CFLAGS += $(DFLAGS)
 debug: $(OUT)
 
+fast: CFLAGS += -O2
+fast: $(OUT)
+
 $(OUT): $(OBJS)
 	ld -r $(OBJS) -o $(OUT)
 	@echo "Built C3/trivalent v1 code object."

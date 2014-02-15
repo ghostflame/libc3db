@@ -9,6 +9,9 @@ all:
 debug:
 	@for d in $(DIRS); do ( cd $$d && $(MAKE) $(MFLAGS) debug ); done
 
+fast:
+	@for d in $(DIRS); do ( cd $$d && $(MAKE) $(MFLAGS) fast ); done
+
 clean:
 	@for d in $(DIRS); do ( echo "Cleaning up in $$d" && cd $$d && $(MAKE) $(MFLAGS) clean ); done
 	@rm -f tests/data/*

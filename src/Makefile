@@ -35,6 +35,10 @@ debug: LFLAGS += $(DFLAGS)
 debug: DBVT = debug
 debug: versions $(LIBT) $(RKVT)
 
+fast: CFLAGS += -O2
+fast: DBVT = fast
+fast: versions $(LIBT) $(RKVT)
+
 versions:
 	@-for d in $(DBVS); do ( cd $$d; $(MAKE) $(MFLAGS) $(DBVT) ); done
 

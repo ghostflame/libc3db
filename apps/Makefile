@@ -12,6 +12,7 @@ RKV     = $(LIBDIR)/libc3db.a
 NAMES   = create dump update query
 APPS    = $(NAMES:%=c3db_%)
 
+fast: all
 
 all:
 	@-for d in $(APPS); do ( $(CC) $(CFLAGS) -o $(BINDIR)/$$d $$d.c $(RKV) && echo "Built $$d" ); done

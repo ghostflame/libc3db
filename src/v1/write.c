@@ -11,6 +11,10 @@ int __c3db_v1_update_cfg( C3HDL *h, C3PNT *pt, int cid, V1CFG *cfg )
 	// round off the timestamp
 	t = pt->ts - ( pt->ts % cfg->period );
 
+	// TODO
+	// maintain a sorted list here, for quicker searching
+	// search to middle, up then down?
+
 	for( u = uplist[cid]; u; u = u->next )
 	  	if( u->ts == t )
 		  	break;
