@@ -15,9 +15,11 @@ APPS    = $(NAMES:%=c3db_%)
 fast: all
 
 all:
+	@mkdir -p $(BINDIR)
 	@-for d in $(APPS); do ( $(CC) $(CFLAGS) -o $(BINDIR)/$$d $$d.c $(RKV) && echo "Built $$d" ); done
 
 debug:
+	@mkdir -p $(BINDIR)
 	@-for d in $(APPS); do ( $(CC) $(DFLAGS) $(CFLAGS) -o $(BINDIR)/$$d $$d.c $(RKV) && echo "Built $$d (debug)" ); done
 
 clean:

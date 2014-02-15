@@ -9,8 +9,9 @@ VER    = $(MAXV).$(MINV).$(MICV)
 LNM    = libc3db
 LIB    = $(LNM).so
 RKV    = $(LNM).a
-LIBT   = ../lib/$(LIB)
-RKVT   = ../lib/$(RKV)
+LDIR   = ../lib
+LIBT   = $(LDIR)/$(LIB)
+RKVT   = $(LDIR)/$(RKV)
 
 IHDR   = ../include/c3db.h
 OBJS   = utils.o init.o actions.o
@@ -43,11 +44,13 @@ versions:
 	@-for d in $(DBVS); do ( cd $$d; $(MAKE) $(MFLAGS) $(DBVT) ); done
 
 $(LIBT): $(OBJS)
+	@mkdir -p $(LDIR)
 	$(CC) -o $(LIBT) $(LFLAGS) $(OBJS) $(DBVO)
 	@( cd ../lib; ln -s $(LIB) $(LIB).$(MAXV) )
 	@echo "Built C3/trivalent database lib."
 
 $(RKVT): $(OBJS)
+	@mkdir -p $(LDIR)
 	@ar crs $(RKVT) $(OBJS) $(DBVO)
 	@ranlib $(RKVT)
 	@echo "Built C3/trivalent database archive."

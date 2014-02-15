@@ -4,12 +4,15 @@ LIBDIR = /usr/lib
 .PHONY: clean debug test
 
 all:
+	@mkdir -p bin lib
 	@for d in $(DIRS); do ( cd $$d && $(MAKE) $(MFLAGS) all ); done
 
 debug:
+	@mkdir -p bin lib
 	@for d in $(DIRS); do ( cd $$d && $(MAKE) $(MFLAGS) debug ); done
 
 fast:
+	@mkdir -p bin lib
 	@for d in $(DIRS); do ( cd $$d && $(MAKE) $(MFLAGS) fast ); done
 
 clean:
