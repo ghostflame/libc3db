@@ -1,5 +1,89 @@
 #include "../c3_internal.h"
 
+int __c3db_v1_update_cfg_sorted( C3HDL *h, C3PNT *pt, int cid, V1CFG *cfg )
+{
+	V1UPD *u, *prv, **uplist;
+	time_t t;
+
+	uplist = (V1UPD **) h->updates;
+
+	// round off the timestamp
+	t = pt->ts - ( pt->ts % cfg->period );
+
+	for( prv = NULL, u = uplist[cid]; u; u = u->next )
+	{
+		// have we found it?
+		if( t == u->ts )
+			break;
+
+		// have we gone past?
+		if( t > u->ts )
+		{
+			// we're creating a new one
+			u = NULL;
+			break;
+		}
+
+		prv = u;
+	}
+
+	if( !u )
+	{
+		u = (V1UPD *) alloc3( sizeof( V1UPD ) );
+		u->ts      = t;
+		u->cfg_idx = cid;
+		u->offset  = c3db_v1_config_offset( cfg, t );
+
+		lseek( h->fd, u->offset, SEEK_SET );
+
+		if( read( h->fd, &(u->orig), sizeof( V1BKT ) ) != sizeof( V1BKT ) )
+		{
+			GETERRNO;
+			free( u );
+			return h->errnum;
+		}
+
+		// copy that
+		memcpy( &(u->changed), &(u->orig), sizeof( V1BKT ) );
+
+		// and maintain the sorted list
+		if( prv )
+		{
+			u->next     = prv->next;
+			prv->next   = u;
+		}
+		else
+		{
+			u->next     = uplist[cid];
+			uplist[cid] = u;
+		}
+	}
+
+	// new date?  the easy case
+	if( u->changed.ts != t )
+	{
+	  	u->changed.ts    = t;
+		u->changed.count = 1;
+		u->changed.sum   = pt->val;
+		u->changed.min   = pt->val;
+		u->changed.max   = pt->val;
+	}
+	else
+	{
+		// we're updating a current valid point
+		if( pt->val > u->changed.max )
+		  	u->changed.max = pt->val;
+		else if( pt->val < u->changed.min )
+		  	u->changed.min = pt->val;
+
+		u->changed.sum += pt->val;
+		u->changed.count++;
+	}
+
+	OK;
+}
+
+
 
 int __c3db_v1_update_cfg( C3HDL *h, C3PNT *pt, int cid, V1CFG *cfg )
 {
@@ -79,7 +163,7 @@ int __c3db_v1_update( C3HDL *h, C3PNT *point )
 	list = (V1CFG *) &(hdr->cfg);
 
 	for( i = 0; i < hdr->bcount; i++ )
-		__c3db_v1_update_cfg( h, point, i, list + i );
+		__c3db_v1_update_cfg_sorted( h, point, i, list + i );
 
 	return C3E_SUCCESS;
 }

@@ -23,9 +23,7 @@ void __c3db_v1_choose_offset( int count, V1CFG *cfg, V1REQ *r )
 		}
 	}
 
-	r->fetch.to = r->orig.to;
-	if( r->fetch.to  % c->period )
-		r->fetch.to -= c->period - ( r->fetch.to % c->period );
+	r->fetch.to = r->orig.to - ( r->orig.to % c->period );
 
 	os = c3db_v1_config_offset( c, r->fetch.from );
 	oe = c3db_v1_config_offset( c, r->fetch.to );
