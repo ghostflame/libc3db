@@ -30,7 +30,7 @@ int main( int ac, char **av )
 	uint64_t sz;
 	C3HDL *h;
 
-	strcpy( file, DEFAULT_FILE );
+	strncpy( file, DEFAULT_FILE, 512 );
 	ret   = DEFAULT_RETAIN;
 	chat  = 0;
 	vers  = C3DB_CURR_VERSION;
@@ -56,21 +56,19 @@ int main( int ac, char **av )
 				ret = strdup( optarg );
 				break;
 			case 'f':
-				strncpy( file, optarg, 509 - C3DB_FILE_EXTN_LEN );
-				file[509 - C3DB_FILE_EXTN_LEN] = '\0';
+				strncpy( file, optarg, 511 )
+				file[511] = '\0';
 				break;
 			case 'v':
 				vers = atoi( optarg );
 				break;
 		}
 
+	// add the file extn if it's not there and there is room
 	l = strlen( file );
-	if( l < ( C3DB_FILE_EXTN_LEN + 2 )
-	 || strcmp( file + l - ( 1 + C3DB_FILE_EXTN_LEN ), "." C3DB_FILE_EXTN ) )
-	{
-		file[l++] = '.';
-		strcpy( file + l, C3DB_FILE_EXTN );
-	}
+	if( strcmp( file + l - ( 1 + C3DB_FILE_EXTN_LEN ), "." C3DB_FILE_EXTN )
+	 && ( l < ( 510 - C3DB_FILE_EXTN_LEN ) ) )
+	  	snprintf( file + l, 512 - l, ".%s", C3DB_FILE_EXTN );
 
 	h = c3db_create( file, vers, ret );
 
