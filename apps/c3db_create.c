@@ -56,7 +56,7 @@ int main( int ac, char **av )
 				ret = strdup( optarg );
 				break;
 			case 'f':
-				strncpy( file, optarg, 511 )
+				strncpy( file, optarg, 511 );
 				file[511] = '\0';
 				break;
 			case 'v':
