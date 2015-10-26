@@ -1,18 +1,6 @@
 #include "../c3_internal.h"
 
 
-uint64_t c3db_v1_config_offset( V1CFG *cfg, time_t when )
-{
-	time_t t;
-	int pos;
-
-	t   = when - ( when % cfg->period );
-	pos = ( t / cfg->period ) % cfg->count;
-
-	return cfg->offset + ( pos * sizeof( V1BKT ) );
-}
-
-
 
 // parse one chunk of a retention string
 int __c3db_v1_parse_retain_part( char *str, int len, V1CFG *cfg )
@@ -22,7 +10,6 @@ int __c3db_v1_parse_retain_part( char *str, int len, V1CFG *cfg )
 
 	if( !str || !*str || !len )
 	  	return -1;
-
 
 	period = strtoul( str, &c, 10 );
 	if( *c != ':' )

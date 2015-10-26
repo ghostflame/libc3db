@@ -15,7 +15,6 @@ c3_hdump_f		c3db_v1_hdump;
 typedef struct	c3db_v1_config		V1CFG;
 typedef struct	c3db_v1_header		V1HDR;
 typedef struct	c3db_v1_bucket		V1BKT;
-typedef struct	c3db_v1_update		V1UPD;
 typedef struct	c3db_v1_request		V1REQ;
 typedef struct	c3db_v1_timespan	V1SPN;
 typedef struct	c3db_v1_offrange	V1RNG;
@@ -54,16 +53,6 @@ struct c3db_v1_bucket
 	float				max;
 };
 
-struct c3db_v1_update
-{
-	V1UPD			*	next;
-	uint64_t			offset;
-	uint32_t			ts;
-	int32_t				cfg_idx;
-	V1BKT				orig;
-	V1BKT				changed;
-};
-
 struct c3db_v1_timespan
 {
 	time_t				from;
@@ -72,11 +61,8 @@ struct c3db_v1_timespan
 
 struct c3db_v1_offrange
 {
-	uint64_t			start;
-	uint64_t			end;
+    uint64_t            start;
 	int32_t				count;
-	int32_t				_padding;
-	V1BKT			*	data;
 };
 
 struct c3db_v1_request
@@ -95,6 +81,6 @@ void c3db_v1_set_version( C3HDL *h );
 
 // utils
 int c3db_v1_parse_retain_string( char *retain, V1CFG **cfg, int *count );
-uint64_t c3db_v1_config_offset( V1CFG *cfg, time_t when );
+#define c3db_v1_config_offset( c, t ) ( c->offset + ( ( ( t / c->period ) % c->count ) * sizeof( V1BKT ) ) )
 
 #endif

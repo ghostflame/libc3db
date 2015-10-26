@@ -26,8 +26,8 @@ clean:
 	@-for d in $(APPS); do rm -f $(BINDIR)/$$d; done
 
 install:
-	@-for d in $(APPS) do ( install -m755 $(BINDIR)/$$d $(INSDIR)/$$d && echo "Installed $$d into $(INSDIR)" ); done
+	@-for d in $(APPS); do ( install -m755 $(BINDIR)/$$d $(INSDIR)/$$d && echo "Installed $$d into $(INSDIR)" ); done
 
 uninstall:
-	@-for d in $(APPS) do ( rm -f $(INSDIR)/$$d && echo "Removed installed copy of $$d" ); done
+	@-for d in $(APPS); do ( rm -f $(INSDIR)/$$d && echo "Removed installed copy of $$d" ); done
 

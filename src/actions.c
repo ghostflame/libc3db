@@ -50,6 +50,8 @@ int c3db_write( C3HDL *h, int count, C3PNT *points )
 
 int c3db_flush( C3HDL *h, int *written )
 {
+    int ret;
+
 	if( !h )
 		return C3E_BAD_HANDLE;
 
@@ -58,7 +60,12 @@ int c3db_flush( C3HDL *h, int *written )
 		OK;
 	}
 
-	return (h->f_flush)( h, written );
+	ret = (h->f_flush)( h, written );
+
+    if( ret == C3E_SUCCESS )
+        h->state = C3DB_ST_OPEN;
+
+    return ret;
 }
 
 
@@ -67,6 +74,7 @@ int c3db_close( C3HDL *h )
 	if( !h )
 		return C3E_BAD_HANDLE;
 
+    // prefer a version close function
 	if( h->f_close )
 		return (h->f_close)( h );
 
@@ -76,6 +84,9 @@ int c3db_close( C3HDL *h )
 		close( h->fd );
 		h->fd = -1;
 	}
+
+    if( h->map )
+        munmap( h->map, h->fsize );
 
 	// we probably have a path
 	if( h->fullpath )

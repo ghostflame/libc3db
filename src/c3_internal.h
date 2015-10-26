@@ -2,6 +2,7 @@
 #define C3DB_INT_H
 
 #include <stdarg.h>
+#include <sys/mman.h>
 #include "../include/c3db.h"
 
 #ifndef	Err
@@ -46,14 +47,16 @@ enum c3db_states
 
 struct c3db_handle
 {
+    void            *   map;
+    void            *   hdr;
+
 	char			*	fullpath;
 	int					fd;
 	int					state;
 	uint64_t			fsize;
 
-	void			*	hdr;
-	void			**	updates;
 
+    int                 updates;
 	int					errnum;
 	int					errnocp;
 

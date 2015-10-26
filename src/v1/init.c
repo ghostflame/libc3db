@@ -16,24 +16,7 @@ void c3db_v1_set_version( C3HDL *h )
 
 int c3db_v1_open( C3HDL *h )
 {
-  	V1HDR *hdr;
-
-	// read in the configs
-	hdr = (V1HDR *) alloc3( h->hsize );
-
-	if( read( h->fd, hdr, h->hsize ) != h->hsize )
-	{
-		GETERRNO;
-		close( h->fd );
-		free( hdr );
-		return -1;
-	}
-
-	// done
-	h->updates = alloc3( hdr->bcount * sizeof( V1UPD * ) );
-	h->hdr     = hdr;
-	h->state   = C3DB_ST_OPEN;
-
+    h->hdr = (V1HDR *) h->map;
 	return 0;
 }
 
@@ -61,9 +44,6 @@ int c3db_v1_create( C3HDL *h, char *retention )
 	hdr->version = h->version;
 	hdr->hsize   = sz;
 	hdr->bcount  = cct;
-
-	// create the updates list
-	h->updates   = alloc3( cct * sizeof( V1UPD * ) );
 
 	// and copy the configs
 	memcpy( hdr->cfg, cfgs, ( cct * sizeof( V1CFG ) ) );
@@ -128,7 +108,6 @@ int c3db_v1_create( C3HDL *h, char *retention )
 	}
 
 	// done
-	h->hdr   = hdr;
 	h->state = C3DB_ST_OPEN;
 
 	return 0;
@@ -139,14 +118,11 @@ int c3db_v1_close( C3HDL *h )
 	if( h->state == C3DB_ST_DIRTY )
 	  	c3db_v1_flush( h, NULL );
 
-	if( h->hdr )
-	  	free( h->hdr );
-
 	if( h->fullpath )
 	  	free( h->fullpath );
 
-	if( h->updates )
-	  	free( h->updates );
+    if( h->map )
+        munmap( h->map, h->fsize );
 
 	if( h->fd >= 0 )
 	  	close( h->fd );

@@ -17,34 +17,15 @@ int __set_version( C3HDL *h )
 }
 
 
-C3HDL *c3db_create( char *path, int version, char *retention )
-{
-	C3HDL *h;
-
-	h = (C3HDL *) alloc3( sizeof( C3HDL ) );
-
-	// 0 means current
-	h->version  = ( version ) ? version : C3DB_CURR_VERSION;
-	h->fullpath = strdup( path );
-
-	if( __set_version( h ) != 0 )
-	  return h;
-
-	// and call the creator function
-	(h->f_create)( h, retention );
-
-	return h;
-}
-
 
 
 C3HDL *c3db_open( char *path, int rw )
 {
   	uint8_t buf[8];
 	struct stat sb;
+  	int f, mt, st;
 	uint32_t *u;
 	uint16_t *s;
-  	int f, st;
 	C3HDL *h;
 
 	h = (C3HDL *) alloc3( sizeof( C3HDL ) );
@@ -56,7 +37,11 @@ C3HDL *c3db_open( char *path, int rw )
 	}
 	else
 	{
+#ifdef O_NOATIME
 		f  = O_RDONLY|O_NOATIME;
+#else
+        f  = O_RDONLY;
+#endif
 		st = C3DB_ST_READONLY;
 	}
 
@@ -86,7 +71,8 @@ C3HDL *c3db_open( char *path, int rw )
 	}
 
 	// get the size
-	if( fstat( h->fd, &sb ) ) {
+	if( fstat( h->fd, &sb ) )
+    {
 		GETERRNO;
 		close( h->fd );
 		return h;
@@ -102,16 +88,50 @@ C3HDL *c3db_open( char *path, int rw )
 		return h;
 	}
 
-	h->state   = st;
+    // mmap the file
+    f  = ( rw ) ? PROT_READ|PROT_WRITE : PROT_READ;
+    mt = ( rw ) ? MAP_SHARED : MAP_PRIVATE;
 
-	// seek back to the start of the file
-	// so the version opener can read the whole header
-	lseek( h->fd, 0, SEEK_SET );
+    h->map = mmap( NULL, h->fsize, f, mt, h->fd, 0 );
+
+    if( h->map == MAP_FAILED )
+    {
+        GETERRNO;
+        close( h->fd );
+        return h;
+    }
 
 	// call the open function for this version
 	(h->f_open)( h );
 
+	h->state = st;
 	return h;
 }
 
+
+C3HDL *c3db_create( char *path, int version, char *retention )
+{
+	C3HDL *h;
+
+	h = (C3HDL *) alloc3( sizeof( C3HDL ) );
+
+    h->fd = -1;
+
+	// 0 means current
+	h->version  = ( version ) ? version : C3DB_CURR_VERSION;
+	h->fullpath = strdup( path );
+
+	if( __set_version( h ) != 0 )
+	  return h;
+
+	// and call the creator function
+	if( (h->f_create)( h, retention ) != C3E_SUCCESS )
+        return h;
+
+    // close it
+    (h->f_close)( h );
+
+    // and re-open rw
+	return c3db_open( path, 1 );
+}
 

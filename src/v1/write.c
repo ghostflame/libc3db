@@ -1,228 +1,76 @@
 #include "../c3_internal.h"
 
-int __c3db_v1_update_cfg_sorted( C3HDL *h, C3PNT *pt, int cid, V1CFG *cfg )
-{
-	V1UPD *u, *prv, **uplist;
-	time_t t;
 
-	uplist = (V1UPD **) h->updates;
-
-	// round off the timestamp
-	t = pt->ts - ( pt->ts % cfg->period );
-
-	for( prv = NULL, u = uplist[cid]; u; u = u->next )
-	{
-		// have we found it?
-		if( t == u->ts )
-			break;
-
-		// have we gone past?
-		if( t > u->ts )
-		{
-			// we're creating a new one
-			u = NULL;
-			break;
-		}
-
-		prv = u;
-	}
-
-	if( !u )
-	{
-		u = (V1UPD *) alloc3( sizeof( V1UPD ) );
-		u->ts      = t;
-		u->cfg_idx = cid;
-		u->offset  = c3db_v1_config_offset( cfg, t );
-
-		lseek( h->fd, u->offset, SEEK_SET );
-
-		if( read( h->fd, &(u->orig), sizeof( V1BKT ) ) != sizeof( V1BKT ) )
-		{
-			GETERRNO;
-			free( u );
-			return h->errnum;
-		}
-
-		// copy that
-		memcpy( &(u->changed), &(u->orig), sizeof( V1BKT ) );
-
-		// and maintain the sorted list
-		if( prv )
-		{
-			u->next     = prv->next;
-			prv->next   = u;
-		}
-		else
-		{
-			u->next     = uplist[cid];
-			uplist[cid] = u;
-		}
-	}
-
-	// new date?  the easy case
-	if( u->changed.ts != t )
-	{
-	  	u->changed.ts    = t;
-		u->changed.count = 1;
-		u->changed.sum   = pt->val;
-		u->changed.min   = pt->val;
-		u->changed.max   = pt->val;
-	}
-	else
-	{
-		// we're updating a current valid point
-		if( pt->val > u->changed.max )
-		  	u->changed.max = pt->val;
-		else if( pt->val < u->changed.min )
-		  	u->changed.min = pt->val;
-
-		u->changed.sum += pt->val;
-		u->changed.count++;
-	}
-
-	OK;
-}
-
-
-
-int __c3db_v1_update_cfg( C3HDL *h, C3PNT *pt, int cid, V1CFG *cfg )
-{
-	V1UPD *u, **uplist;
-	time_t t;
-
-	uplist = (V1UPD **) h->updates;
-
-	// round off the timestamp
-	t = pt->ts - ( pt->ts % cfg->period );
-
-	// TODO
-	// maintain a sorted list here, for quicker searching
-	// search to middle, up then down?
-
-	for( u = uplist[cid]; u; u = u->next )
-	  	if( u->ts == t )
-		  	break;
-
-	if( !u )
-	{
-		u = (V1UPD *) alloc3( sizeof( V1UPD ) );
-		u->ts      = t;
-		u->cfg_idx = cid;
-		u->offset  = c3db_v1_config_offset( cfg, t );
-
-		lseek( h->fd, u->offset, SEEK_SET );
-
-		if( read( h->fd, &(u->orig), sizeof( V1BKT ) ) != sizeof( V1BKT ) )
-		{
-			GETERRNO;
-			free( u );
-			return h->errnum;
-		}
-
-		// copy that
-		memcpy( &(u->changed), &(u->orig), sizeof( V1BKT ) );
-
-		// and push that to the top
-		u->next     = uplist[cid];
-		uplist[cid] = u;
-	}
-
-	// new date?  the easy case
-	if( u->changed.ts != t )
-	{
-	  	u->changed.ts    = t;
-		u->changed.count = 1;
-		u->changed.sum   = pt->val;
-		u->changed.min   = pt->val;
-		u->changed.max   = pt->val;
-	}
-	else
-	{
-		// we're updating a current valid point
-		if( pt->val > u->changed.max )
-		  	u->changed.max = pt->val;
-		else if( pt->val < u->changed.min )
-		  	u->changed.min = pt->val;
-
-		u->changed.sum += pt->val;
-		u->changed.count++;
-	}
-
-	OK;
-}
-
-
-
-int __c3db_v1_update( C3HDL *h, C3PNT *point )
-{
-	V1CFG *list;
-	V1HDR *hdr;
-	int i;
-
-	hdr  = (V1HDR *) h->hdr;
-	list = (V1CFG *) &(hdr->cfg);
-
-	for( i = 0; i < hdr->bcount; i++ )
-		__c3db_v1_update_cfg_sorted( h, point, i, list + i );
-
-	return C3E_SUCCESS;
-}
-
-
-
+// iterate over points and configs updating the in-memory
+// map of the database file
 int c3db_v1_write( C3HDL *h, int count, C3PNT *points )
 {
-	int i;
+    register C3PNT *pt;
+    register V1BKT *bk;
+    register int j;
+    V1BKT *base;
+    V1CFG *cfg;
+    V1HDR *hdr;
+    time_t ts;
+    int i;
 
-	for( i = 0; i < count; i++ )
-		if( __c3db_v1_update( h, points + i ) )
-		  	return h->errnum;
+    hdr = (V1HDR *) h->hdr;
+    cfg = (V1CFG *) &(hdr->cfg);
 
-	OK;
+    for( i = 0; i < hdr->bcount; i++, cfg++ )
+    {
+        pt   = points;
+        // find the start of the buckets for this config
+        base = (V1BKT *) ( h->map + cfg->offset );
+
+        for( j = 0; j < count; j++, pt++ )
+        {
+            // get the timestamp and find the bucket
+            ts  = pt->ts - ( pt->ts % cfg->period );
+
+            // find the bucket to update
+            bk = base + ( ( ts / cfg->period ) % cfg->count );
+
+            // new or old?
+            if( bk->ts != ts )
+            {
+                // new
+                bk->ts    = ts;
+                bk->count = 1;
+                bk->sum   = pt->val;
+                bk->min   = pt->val;
+                bk->max   = pt->val;
+            }
+            else
+            {
+                // old, so update
+                bk->count++;
+                bk->sum += pt->val;
+
+                if( pt->val > bk->max )
+                    bk->max = pt->val;
+                else if( pt->val < bk->min )
+                    bk->min = pt->val;
+            }
+        }
+    }
+
+    h->updates += count;
+    
+    OK;
 }
-
-
-
 
 
 int c3db_v1_flush( C3HDL *h, int *written )
 {
-	V1UPD *up, *list, **all;
-	V1HDR *hdr;
-	int i, j;
+    if( h->map && h->updates > 0 )
+    {
+        if( msync( h->map, h->fsize, MS_ASYNC|MS_INVALIDATE ) )
+        {
+            ERRNO;
+        }
+    }
 
-	h->state = C3DB_ST_WRITING;
-
-	hdr = (V1HDR *)  h->hdr;
-	all = (V1UPD **) h->updates;
-
-	for( i = 0, j = 0; i < hdr->bcount; i++ )
-	{
-		list = all[i];
-
-		while( list )
-		{
-			up   = list;
-			list = up->next;
-
-			lseek( h->fd, up->offset, SEEK_SET );
-			if( write( h->fd, &(up->changed), sizeof( V1BKT ) ) != sizeof( V1BKT ) )
-			{
-				ERRNO;
-			}
-
-			free( up );
-			j++;
-		}
-
-		// and mark that update list empty
-		all[i] = NULL;
-	}
-
-	if( written )
-	  	*written = j;
-
-	h->state = C3DB_ST_OPEN;
-
-	OK;
+    OK;
 }
+

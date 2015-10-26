@@ -32,7 +32,7 @@ void __c3db_v1_choose_offset( int count, V1CFG *cfg, V1REQ *r )
 	{
 		r->ranges         = 1;
 		r->range[0].start = os;
-		r->range[0].end   = oe;
+        r->range[0].count = ( oe - os ) / sizeof( V1BKT );
 	}
 	else
 	{
@@ -40,116 +40,110 @@ void __c3db_v1_choose_offset( int count, V1CFG *cfg, V1REQ *r )
 		r->ranges         = 2;
 
 		r->range[0].start = c->offset;
-		r->range[0].end   = oe;
+        r->range[0].count = ( oe - c->offset ) / sizeof( V1BKT );
 
 		r->range[1].start = os;
-		r->range[1].end   = c->offset + ( c->count * sizeof( V1BKT ) );
+		r->range[1].count = c->count - ( ( os - c->offset ) / sizeof( V1BKT ) );
 	}
 }
 
 
-typedef void __c3db_v1_parser ( C3RES *, V1BKT *, int );
+typedef void __c3db_v1_parser ( C3RES *, V1BKT *, int, int );
 
 
-void __c3db_v1_parse_min( C3RES *res, V1BKT *data, int count )
+void __c3db_v1_parse_min( C3RES *res, V1BKT *data, int count, int offset )
 {
-	V1BKT *b;
-	int i, k;
+	register int i, k;
+	register V1BKT *b;
 
-	for( b = data, i = 0; i < count; i++, b++ )
+	for( b = data, k = offset, i = 0; i < count; i++, b++, k++ )
 	{
 		if( b->ts >= res->to
 		 || b->ts <  res->from )
 			continue;
 
-		k = ( b->ts - res->from ) / res->period;
 		res->points[k].ts  = b->ts;
 		res->points[k].val = b->min;
 	}
 }
 
-void __c3db_v1_parse_max( C3RES *res, V1BKT *data, int count )
+void __c3db_v1_parse_max( C3RES *res, V1BKT *data, int count, int offset )
 {
-	V1BKT *b;
-	int i, k;
+	register int i, k;
+	register V1BKT *b;
 
-	for( b = data, i = 0; i < count; i++, b++ )
+	for( b = data, k = offset, i = 0; i < count; i++, b++, k++ )
 	{
 		if( b->ts >= res->to
 		 || b->ts <  res->from )
 			continue;
 
-		k = ( b->ts - res->from ) / res->period;
 		res->points[k].ts  = b->ts;
 		res->points[k].val = b->max;
 	}
 }
 
 
-void __c3db_v1_parse_sum( C3RES *res, V1BKT *data, int count )
+void __c3db_v1_parse_sum( C3RES *res, V1BKT *data, int count, int offset )
 {
-	V1BKT *b;
-	int i, k;
+	register int i, k;
+	register V1BKT *b;
 
-	for( b = data, i = 0; i < count; i++, b++ )
+	for( b = data, k = offset, i = 0; i < count; i++, b++, k++ )
 	{
 		if( b->ts >= res->to
 		 || b->ts <  res->from )
 			continue;
 
-		k = ( b->ts - res->from ) / res->period;
 		res->points[k].ts  = b->ts;
 		res->points[k].val = b->sum;
 	}
 }
 
-void __c3db_v1_parse_count( C3RES *res, V1BKT *data, int count )
+void __c3db_v1_parse_count( C3RES *res, V1BKT *data, int count, int offset )
 {
-	V1BKT *b;
-	int i, k;
+	register int i, k;
+	register V1BKT *b;
 
-	for( b = data, i = 0; i < count; i++, b++ )
+	for( b = data, k = offset, i = 0; i < count; i++, b++, k++ )
 	{
 		if( b->ts >= res->to
 		 || b->ts <  res->from )
 			continue;
 
-		k = ( b->ts - res->from ) / res->period;
 		res->points[k].ts  = b->ts;
 		res->points[k].val = b->count;
 	}
 }
 
-void __c3db_v1_parse_mean( C3RES *res, V1BKT *data, int count )
+void __c3db_v1_parse_mean( C3RES *res, V1BKT *data, int count, int offset )
 {
-	V1BKT *b;
-	int i, k;
+	register int i, k;
+	register V1BKT *b;
 
-	for( b = data, i = 0; i < count; i++, b++ )
+	for( b = data, k = offset, i = 0; i < count; i++, b++, k++ )
 	{
 		if( b->ts >= res->to
 		 || b->ts <  res->from )
 			continue;
 
-		k = ( b->ts - res->from ) / res->period;
 		res->points[k].ts  = b->ts;
 		res->points[k].val = ( b->count ) ? b->sum / b->count : 0;
 	}
 }
 
 
-void __c3db_v1_parse_spread( C3RES *res, V1BKT *data, int count )
+void __c3db_v1_parse_spread( C3RES *res, V1BKT *data, int count, int offset )
 {
 	V1BKT *b;
 	int i, k;
 
-	for( b = data, i = 0; i < count; i++, b++ )
+	for( b = data, k = offset, i = 0; i < count; i++, b++, k++ )
 	{
 		if( b->ts >= res->to
 		 || b->ts <  res->from )
 			continue;
 
-		k = ( b->ts - res->from ) / res->period;
 		res->points[k].ts  = b->ts;
 		res->points[k].val = b->max - b->min;
 	}
@@ -166,64 +160,30 @@ __c3db_v1_parser *__c3db_v1_parser_fns[C3DB_REQ_END] = {
 
 
 
-int __c3db_v1_read_range( C3HDL *h, V1RNG *rng )
-{
-	int sz;
-
-	sz = (int) ( rng->end - rng->start );
-	if( sz <= 0 )
-	{
-		rng->count = 0;
-		h->errnum  = C3E_BAD_RANGE;
-		return -1;
-	}
-
-	rng->count = sz / sizeof( V1BKT );
-	rng->data  = (V1BKT *) alloc3( sz );
-
-	lseek( h->fd, rng->start, SEEK_SET );
-
-	if( read( h->fd, rng->data, sz ) != sz )
-	{
-		GETERRNO;
-		free( rng->data );
-		rng->data  = NULL;
-		rng->count = 0;
-		return -1;
-	}
-
-	return 0;
-}
-
-
 
 int c3db_v1_read( C3HDL *h, time_t from, time_t to, int metric, C3RES *res )
 {
-	V1HDR *hdr;
-	time_t t;
-	V1REQ r;
-	int i;
+    __c3db_v1_parser *pfn;
+    V1HDR *hdr;
+    V1BKT *bkt;
+    time_t t;
+    V1REQ r;
 
-	time( &t );
-	if( from > t )
-	 	OK;
+    // limit the ranges - don't report on the future
+    time( &t );
+    if( from > t )
+        OK;
+    if( to > t )
+        to = t;
 
 	memset( &r, 0, sizeof( V1REQ ) );
 	r.now       = t;
 	r.orig.to   = to;
 	r.orig.from = from;
 
-	hdr = (V1HDR *) h->hdr;
+	hdr = (V1HDR *) h->map;
 
 	__c3db_v1_choose_offset( hdr->bcount, (V1CFG *) hdr->cfg, &r );
-
-	for( i = 0; i < r.ranges; i++ )
-	 	if( __c3db_v1_read_range( h, &(r.range[i]) ) )
-		{
-			while( --i >= 0 )
-				free( r.range[i].data );
-			return h->errnum;
-		}
 
 	res->from   = r.fetch.from;
 	res->to     = r.fetch.to;
@@ -231,15 +191,20 @@ int c3db_v1_read( C3HDL *h, time_t from, time_t to, int metric, C3RES *res )
 	res->count  = ( res->to - res->from ) / res->period;
 	res->points = (C3PNT *) alloc3( res->count * sizeof( C3PNT ) );
 
-	for( i = 0; i < r.ranges; i++ )
-	{
-		// parse fn is based on rtype
-	  	(__c3db_v1_parser_fns[res->rtype])( res, r.range[i].data, r.range[i].count );
-		free( r.range[i].data );
-		r.range[i].data = NULL;
+    // pick a parse function
+    pfn = __c3db_v1_parser_fns[res->rtype];
 
-	}
+    // handle range 0
+    bkt = (V1BKT *) ( h->map + r.range[0].start );
+    (*pfn)( res, bkt, r.range[0].count, 0 );
 
+    if( r.ranges == 2 )
+    {
+        // handle range 1
+        bkt = (V1BKT *) ( h->map + r.range[1].start );
+        (*pfn)( res, bkt, r.range[1].count, r.range[0].count );
+    }
+ 
 	OK;
 }
 
@@ -250,7 +215,7 @@ void c3db_v1_hdump( C3HDL *h, FILE *to )
 	V1CFG *cfg;
 	int i;
 
-	hdr = (V1HDR *) h->hdr;
+	hdr = (V1HDR *) h->map;
 	cfg = (V1CFG *) hdr->cfg;
 
 	fprintf( to, "File name:         %s\n",          h->fullpath );
@@ -271,10 +236,10 @@ int c3db_v1_dump( C3HDL *h, FILE *to, int show_empty )
 	float mean;
 	V1HDR *hdr;
 	V1CFG *cfg;
-	V1BKT bkt;
+	V1BKT *bkt;
 	int i, c;
 
-	hdr = (V1HDR *) h->hdr;
+	hdr = (V1HDR *) h->map;
 	cfg = (V1CFG *) hdr->cfg;
 
 	fmt  = "%10ld : %8u %8.3g %8.3g %8.3g %8.3g\n";
@@ -284,19 +249,16 @@ int c3db_v1_dump( C3HDL *h, FILE *to, int show_empty )
 	{
 		fprintf( to, "Period:  %u    Count:  %u\n", cfg->period, cfg->count );
 		fprintf( to, sfmt, "Timestamp", "Count", "Mean", "Sum", "Min", "Max" );
-		lseek( h->fd, cfg->offset, SEEK_SET );
-		for( c = 0; c < cfg->count; c++ )
+
+        bkt = (V1BKT *) ( h->map + cfg->offset );
+
+        for( c = 0; c < cfg->count; c++, bkt++ )
 		{
-			if( read( h->fd, &bkt, sizeof( V1BKT ) ) != sizeof( V1BKT ) )
-			{
-				ERRNO;
-			}
-			if( !show_empty && !bkt.count )
+			if( !show_empty && !bkt->count )
 				continue;
-			mean = ( bkt.count ) ? bkt.sum / bkt.count : 0.0;
-			fprintf( to, fmt, bkt.ts,
-				bkt.count, mean,
-				bkt.sum, bkt.min, bkt.max );
+			mean = ( bkt->count ) ? bkt->sum / bkt->count : 0.0;
+			fprintf( to, fmt, bkt->ts, bkt->count, mean,
+				bkt->sum, bkt->min, bkt->max );
 		}
 	}
 
