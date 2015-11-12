@@ -11,25 +11,33 @@ void usage( void )
 	printf( " -f <file>    C3DB filename.\n" );
 	printf( " -b <ts>      Begin from this timestamp.\n" );
 	printf( " -e <ts>      End at this timestamp.\n" );
+	printf( " -B <usec>    Bring from this usec timestamp.\n" );
+	printf( " -E <usec>    End at this usec timestamp.\n" );
 	printf( " -d <sec>     Duration of query.\n" );
+	printf( " -D <usec>    Duration of query in usec.\n" );
 	printf( " -m <metric>  Metric to fetch (default: mean).\n" );
 	printf( " -o <file>    Output filename (default: stdout).\n\n" );
 
 	printf( "Time range may be specified in one of three ways:\n" );
-	printf( "Start and end:        use -b and -e\n" );
-	printf( "Start and duration:   use -b and -d\n" );
-	printf( "End and duration:     use -e and -d\n\n" );
+	printf( "Start and end:        use -b and -e  OR  -B and -E\n" );
+	printf( "Start and duration:   use -b and -d  OR  -B and -D\n" );
+	printf( "End and duration:     use -e and -d  OR  -E and -D\n\n" );
 
 	exit( 0 );
 }
 
 
+void us_check( int us )
+{
+	if( us == 1 )
+		exit( fprintf( stderr, "Cannot mix usec and sec timings.\n" ) );
+}
 
 int main( int ac, char **av )
 {
-  	time_t begin, end, from, to, dur;
+  	uint64_t begin, end, from, to, dur;
   	char *out, *file, *metric;
-	int oc, met, i;
+	int oc, met, i, us;
 	C3RES res;
 	C3PNT *p;
 	C3HDL *h;
@@ -45,7 +53,7 @@ int main( int ac, char **av )
 	to     = 0;
 	fh     = stdout;
 
-	while( ( oc = getopt( ac, av, "hf:o:m:b:e:d:" ) ) != -1 )
+	while( ( oc = getopt( ac, av, "hf:o:m:b:e:d:B:E:D:" ) ) != -1 )
 		switch( oc )
 		{
 			case 'h':
@@ -60,14 +68,29 @@ int main( int ac, char **av )
 			case 'm':
 				metric = strdup( optarg );
 				break;
+			case 'B':
+				us    = 1;
+				begin = strtoull( optarg, NULL, 10 );
+				break;
 			case 'b':
-				begin = (time_t) strtoul( optarg, NULL, 10 );
+				us_check( us );
+				begin = strtoull( optarg, NULL, 10 );
+				break;
+			case 'E':
+				us  = 1;
+				end = strtoull( optarg, NULL, 10 );
 				break;
 			case 'e':
-				end = (time_t) strtoul( optarg, NULL, 10 );
+				us_check( us );
+				end = strtoull( optarg, NULL, 10 );
+				break;
+			case 'D':
+				us  = 1;
+				dur = strtoull( optarg, NULL, 10 );
 				break;
 			case 'd':
-				dur = (time_t) strtoul( optarg, NULL, 10 );
+				us_check( us );
+				dur = strtoull( optarg, NULL, 10 );
 				break;
 		}
 
@@ -75,6 +98,14 @@ int main( int ac, char **av )
 	{
 		fprintf( stderr, "No C3DB file specified.\n" );
 		return 1;
+	}
+
+	if( us == 0 )
+	{
+		// spot the macro...
+		tt_to_us( begin, begin );
+		tt_to_us( end,   end   );
+		tt_to_us( dur,   dur   );
 	}
 
 	if( end )
@@ -127,14 +158,18 @@ int main( int ac, char **av )
 	}
 
 
-	if( c3db_read( h, from, to, met, &res ) )
+	if( c3db_read_us( h, from, to, met, &res ) )
 	{
 		fprintf( stderr, "Failed to query C3DB '%s' -- %s\n", file, c3db_error( h ) );
 		return 1;
 	}
 
-	for( p = res.points, i = 0; i < res.count; i++, p++ )
-		fprintf( fh, "ts: %10ld   %s: %f\n", p->ts, metric, p->val );
+	if( us )
+		for( p = res.points, i = 0; i < res.count; i++, p++ )
+			fprintf( fh, "ts: %10lu.%06lu   %s: %f\n", p->ts / 1000000, p->ts % 1000000, metric, p->val );
+	else
+		for( p = res.points, i = 0; i < res.count; i++, p++ )
+			fprintf( fh, "ts: %10ld   %s: %f\n", p->ts, metric, p->val );
 
 	c3db_close( h );
 

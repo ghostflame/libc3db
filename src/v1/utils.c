@@ -5,18 +5,29 @@
 // parse one chunk of a retention string
 int __c3db_v1_parse_retain_part( char *str, int len, V1CFG *cfg )
 {
-  	unsigned long span, period, count;
+	uint64_t span, period, count;
 	char *c, *s;
 
 	if( !str || !*str || !len )
 	  	return -1;
 
-	period = strtoul( str, &c, 10 );
-	if( *c != ':' )
-	  	return -1;
+	period = strtoull( str, &c, 10 );
+	switch( *c )
+	{
+		case ':':
+			// this is in seconds
+			tt_to_us( period, period );
+			break;
+		case 'u':
+			// already microseconds
+			break;
+		default:
+			return -1;
+	}
+
 	c++;
 
-	span = strtoul( c, &s, 10 );
+	span = strtoull( c, &s, 10 );
 
 	// check if either is 0
 	if( !period || !span )
@@ -35,6 +46,9 @@ int __c3db_v1_parse_retain_part( char *str, int len, V1CFG *cfg )
 				span *= 60;
 		case 'm':
 				span *= 60;
+		case 's':
+				tt_to_us( span, span );
+		case 'u':
 		default:
 				break;
 	}
@@ -45,7 +59,7 @@ int __c3db_v1_parse_retain_part( char *str, int len, V1CFG *cfg )
 	  	return -3;
 
 	cfg->period = period;
-	cfg->count  = count;
+	cfg->count  = (uint32_t) count;
 
 	return 0;
 }

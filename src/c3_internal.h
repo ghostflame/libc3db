@@ -22,11 +22,11 @@
 typedef int  c3_open_f   ( C3HDL * );
 typedef int  c3_create_f ( C3HDL *, char * );
 typedef int  c3_close_f  ( C3HDL * );
-typedef int  c3_read_f   ( C3HDL *, time_t, time_t, int, C3RES * );
+typedef int  c3_read_f   ( C3HDL *, uint64_t, uint64_t, int, C3RES * );
 typedef int  c3_write_f  ( C3HDL *, int, C3PNT * );
 typedef int  c3_flush_f  ( C3HDL *, int * );
-typedef int  c3_dump_f   ( C3HDL *, FILE *, int );
-typedef void c3_hdump_f  ( C3HDL *, FILE * );
+typedef int  c3_dump_f   ( C3HDL *, FILE *, int, int );
+typedef void c3_hdump_f  ( C3HDL *, FILE *, int );
 
 
 // bring in version-specific headers

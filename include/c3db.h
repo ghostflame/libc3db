@@ -14,6 +14,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
 
 #ifndef Err
@@ -33,19 +34,18 @@ typedef struct c3db_result_set	C3RES;
 
 struct c3db_point
 {
-	time_t				ts;
-	float				val;
+	uint64_t			ts;
+	double				val;
 };
 
 struct c3db_result_set
 {
-	int					rtype;
-	time_t				from;
-	time_t				to;
-	int					period;
-	int					count;
-	int32_t				_padding;
+	uint64_t			from;
+	uint64_t			to;
+	uint64_t			period;
 	C3PNT			*	points;
+	uint32_t			count;
+	int					rtype;
 };
 
 
@@ -76,8 +76,18 @@ enum c3db_errnums
 	C3E_BAD_RANGE,
 	C3E_BAD_METRIC,
 	C3E_BAD_RETAIN,
+	C3E_BAD_FORMAT,
 	C3E_HDR_READ_FAIL,
 	C3E_MAX
+};
+
+
+enum c3db_ts_style
+{
+	C3DB_TS_SEC = 0,		// 1234567890
+	C3DB_TS_TVAL,			// 1234567890.123456
+	C3DB_TS_USEC,			// 1234567890123456
+	C3DB_TS_MAX
 };
 
 
@@ -92,6 +102,14 @@ enum c3db_errnums
 #define C3DB_RW				1
 
 
+#define tt_to_us( _t, _u )	_u = ( (uint64_t) _t ) * 1000000
+#define us_to_tt( _u, _t )	_t = (time_t) ( _u / 1000000 )
+
+#define tv_to_us( _tv, _u )	_u = ( ( (uint64_t) _tv.tv_sec ) * 1000000 ) + ( (uint64_t) _tv.tv_usec )
+#define us_to_tv( _u, _tv )	_tv.tv_sec = (time_t) ( _u / 1000000 ); _tv.tv_usec = (long) _u % 1000000
+
+
+
 // init/shutdown
 C3HDL *c3db_open( char *path, int rw );
 C3HDL *c3db_create( char *path, int version, char *retention );
@@ -99,6 +117,8 @@ int c3db_close( C3HDL *h );
 
 // queries
 int c3db_read( C3HDL *h, time_t from, time_t to, int metric, C3RES *res );
+int c3db_read_tv( C3HDL *h, struct timeval from, struct timeval to, int metric, C3RES *res );
+int c3db_read_us( C3HDL *h, uint64_t from, uint64_t to, int metric, C3RES *res );
 
 // updates
 int c3db_write( C3HDL *h, int count, C3PNT *points );
@@ -111,8 +131,8 @@ int c3db_status( C3HDL *h );
 
 // utils
 uint64_t c3db_file_size( C3HDL *h );
-int c3db_dump( C3HDL *h, FILE *to, int show_empty );
-int c3db_dump_header( C3HDL *h, FILE *to );
+int c3db_dump( C3HDL *h, FILE *to, int show_empty, int ts_fmt );
+int c3db_dump_header( C3HDL *h, FILE *to, int ts_fmt );
 int c3db_metric( char *name );
 char *c3db_metric_name( int metric );
 

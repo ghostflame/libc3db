@@ -8,10 +8,10 @@ int c3db_v1_write( C3HDL *h, int count, C3PNT *points )
     register C3PNT *pt;
     register V1BKT *bk;
     register int j;
+    uint64_t ts;
     V1BKT *base;
     V1CFG *cfg;
     V1HDR *hdr;
-    time_t ts;
     int i;
 
     hdr = (V1HDR *) h->hdr;
@@ -69,6 +69,8 @@ int c3db_v1_flush( C3HDL *h, int *written )
         {
             ERRNO;
         }
+		if( written )
+			*written = h->updates;
     }
 
     OK;

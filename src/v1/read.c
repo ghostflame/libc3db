@@ -3,8 +3,7 @@
 
 void __c3db_v1_choose_offset( int count, V1CFG *cfg, V1REQ *r )
 {
-	uint64_t os, oe;
-	time_t cstart;
+	uint64_t os, oe, cstart;
 	V1CFG *c;
 	int i;
 
@@ -161,16 +160,19 @@ __c3db_v1_parser *__c3db_v1_parser_fns[C3DB_REQ_END] = {
 
 
 
-int c3db_v1_read( C3HDL *h, time_t from, time_t to, int metric, C3RES *res )
+int c3db_v1_read( C3HDL *h, uint64_t from, uint64_t to, int metric, C3RES *res )
 {
     __c3db_v1_parser *pfn;
+	struct timeval tv;
     V1HDR *hdr;
     V1BKT *bkt;
-    time_t t;
+    uint64_t t;
     V1REQ r;
 
     // limit the ranges - don't report on the future
-    time( &t );
+	gettimeofday( &tv, NULL );
+	tv_to_us( tv, t );
+
     if( from > t )
         OK;
     if( to > t )
@@ -209,8 +211,9 @@ int c3db_v1_read( C3HDL *h, time_t from, time_t to, int metric, C3RES *res )
 }
 
 
-void c3db_v1_hdump( C3HDL *h, FILE *to )
+void c3db_v1_hdump( C3HDL *h, FILE *to, int ts_fmt )
 {
+	time_t t, sec;
 	V1HDR *hdr;
 	V1CFG *cfg;
 	int i;
@@ -224,30 +227,45 @@ void c3db_v1_hdump( C3HDL *h, FILE *to )
 	fprintf( to, "Header size:       %hu bytes\n",   h->hsize );
 	fprintf( to, "Retention count:   %d\n",          hdr->bcount );
 	for( i = 0; i < hdr->bcount; i++, cfg++ )
-		fprintf( to, "  %2d   @ %6ds for %8ds\n", i,
-			cfg->period, ( cfg->period * cfg->count ) );
+	{
+		us_to_tt( cfg->period, t );
+		us_to_tt( ( cfg->period * cfg->count ), sec );
+		fprintf( to, "  %2d   @ %6lds for %8lds\n", i, t, sec );
+	}
 }
 
 
 
-int c3db_v1_dump( C3HDL *h, FILE *to, int show_empty )
+int c3db_v1_dump( C3HDL *h, FILE *to, int show_empty, int ts_fmt )
 {
-	char *fmt, *sfmt;
+	char *dfmt, *sfmt;
 	float mean;
 	V1HDR *hdr;
 	V1CFG *cfg;
 	V1BKT *bkt;
 	int i, c;
 
+	char *dfmts[3] = {
+		"%10lu : %8u %8.3g %8.3g %8.3g %8.3g\n",
+		"%10lu.%06lu : %8u %8.3g %8.3g %8.3g %8.3g\n",
+		"%16lu : %8u %8.3g %8.3g %8.3g %8.3g\n"
+	};
+
+	char *sfmts[3] = {
+		"%10s : %8s %8s %8s %8s %8s\n",
+		"%17s : %8s %8s %8s %8s %8s\n",
+		"%16s : %8s %8s %8s %8s %8s\n"
+	};
+
 	hdr = (V1HDR *) h->map;
 	cfg = (V1CFG *) hdr->cfg;
 
-	fmt  = "%10ld : %8u %8.3g %8.3g %8.3g %8.3g\n";
-	sfmt = "%10s : %8s %8s %8s %8s %8s\n";
+	dfmt = dfmts[ts_fmt];
+	sfmt = sfmts[ts_fmt];
 
 	for( i = 0; i < hdr->bcount; i++, cfg++ )
 	{
-		fprintf( to, "Period:  %u    Count:  %u\n", cfg->period, cfg->count );
+		fprintf( to, "Period:  %.3g    Count:  %u\n", ((double) cfg->period) / 1000000.0, cfg->count );
 		fprintf( to, sfmt, "Timestamp", "Count", "Mean", "Sum", "Min", "Max" );
 
         bkt = (V1BKT *) ( h->map + cfg->offset );
@@ -257,8 +275,22 @@ int c3db_v1_dump( C3HDL *h, FILE *to, int show_empty )
 			if( !show_empty && !bkt->count )
 				continue;
 			mean = ( bkt->count ) ? bkt->sum / bkt->count : 0.0;
-			fprintf( to, fmt, bkt->ts, bkt->count, mean,
-				bkt->sum, bkt->min, bkt->max );
+
+			switch( ts_fmt )
+			{
+				case C3DB_TS_SEC:
+					fprintf( to, dfmt, bkt->ts / 1000000,
+						bkt->count, mean, bkt->sum, bkt->min, bkt->max );
+					break;
+				case C3DB_TS_TVAL:
+					fprintf( to, dfmt, bkt->ts / 1000000, bkt->ts % 1000000,
+						bkt->count, mean, bkt->sum, bkt->min, bkt->max );
+					break;
+				case C3DB_TS_USEC:
+					fprintf( to, dfmt, bkt->ts,
+						bkt->count, mean, bkt->sum, bkt->min, bkt->max );
+					break;
+			}
 		}
 	}
 

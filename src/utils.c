@@ -47,6 +47,7 @@ static char *c3db_error_strings[C3E_MAX] =
 	"Bad file range",
 	"Bad request metric",
 	"Bad retention string",
+	"Bad time format",
 	"Failed to read header"
 };
 

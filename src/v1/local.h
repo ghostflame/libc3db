@@ -23,7 +23,7 @@ typedef struct	c3db_v1_offrange	V1RNG;
 struct c3db_v1_config
 {
 	uint32_t			count;
-	uint32_t			period;
+	uint64_t			period;
 	uint64_t			offset;
 };
 
@@ -46,17 +46,17 @@ struct c3db_v1_header
 
 struct c3db_v1_bucket
 {
-	uint32_t			ts;
+	uint64_t			ts;
+	double				sum;
+	double				min;
+	double				max;
 	uint32_t			count;
-	float				sum;
-	float				min;
-	float				max;
 };
 
 struct c3db_v1_timespan
 {
-	time_t				from;
-	time_t				to;
+	uint64_t			from;
+	uint64_t			to;
 };
 
 struct c3db_v1_offrange
@@ -70,7 +70,7 @@ struct c3db_v1_request
 	V1SPN				orig;
 	V1SPN				fetch;
 	V1CFG			*	cfg;
-	uint32_t			now;
+	uint64_t			now;
 	int32_t				ranges;
 	V1RNG				range[2];
 };
