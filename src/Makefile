@@ -1,7 +1,7 @@
 CC     = /usr/bin/gcc -Wall -Wshadow
 
 MAXV   = 0
-MINV   = 1
+MINV   = 2
 MICV   = 0
 
 VER    = $(MAXV).$(MINV).$(MICV)
@@ -46,7 +46,7 @@ versions:
 $(LIBT): $(OBJS)
 	@mkdir -p $(LDIR)
 	$(CC) -o $(LIBT) $(LFLAGS) $(OBJS) $(DBVO)
-	@( cd ../lib; ln -s $(LIB) $(LIB).$(MAXV) )
+	@( cd ../lib; ln -s $(LIB) $(LIB).$(MAXV); ln -s $(LIB) $(LIB).$(MAXV).$(MINV).$(MICV) )
 	@echo "Built C3/trivalent database lib."
 
 $(RKVT): $(OBJS)
