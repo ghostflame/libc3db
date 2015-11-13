@@ -47,10 +47,10 @@ struct c3db_v1_header
 struct c3db_v1_bucket
 {
 	uint64_t			ts;
-	double				sum;
-	double				min;
-	double				max;
 	uint32_t			count;
+	float				sum;
+	float				min;
+	float				max;
 };
 
 struct c3db_v1_timespan
@@ -84,3 +84,4 @@ int c3db_v1_parse_retain_string( char *retain, V1CFG **cfg, int *count );
 #define c3db_v1_config_offset( c, t ) ( c->offset + ( ( ( t / c->period ) % c->count ) * sizeof( V1BKT ) ) )
 
 #endif
+
