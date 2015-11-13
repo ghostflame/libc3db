@@ -35,7 +35,7 @@ typedef struct c3db_result_set	C3RES;
 struct c3db_point
 {
 	uint64_t			ts;
-	double				val;
+	float				val;
 };
 
 struct c3db_result_set
