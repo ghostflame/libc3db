@@ -108,6 +108,12 @@ enum c3db_ts_style
 #define tv_to_us( _tv, _u )	_u = ( ( (uint64_t) _tv.tv_sec ) * 1000000 ) + ( (uint64_t) _tv.tv_usec )
 #define us_to_tv( _u, _tv )	_tv.tv_sec = (time_t) ( _u / 1000000 ); _tv.tv_usec = (long) _u % 1000000
 
+#define ms_to_us( _m, _u )	_u = ( (uint64_t) _m ) * 1000
+
+
+#define C3DB_RETAIN_FRAG		"[0-9]+[mMuU]?:[0-9]+[yYwWdDhHmMsSuU]"
+#define C3DB_RETAIN_PATN		"^(" C3DB_RETAIN_FRAG ";)*" C3DB_RETAIN_FRAG "$"
+
 
 
 // init/shutdown
@@ -128,6 +134,7 @@ int c3db_flush( C3HDL *h, int *written );
 char *c3db_errstr( int errnum );
 char *c3db_error( C3HDL *h );
 int c3db_status( C3HDL *h );
+int c3db_errno( C3HDL *h );
 
 // utils
 uint64_t c3db_file_size( C3HDL *h );

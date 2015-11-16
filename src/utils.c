@@ -80,6 +80,13 @@ int c3db_status( C3HDL *h )
 	return h->errnum;
 }
 
+int c3db_errno( C3HDL *h )
+{
+	if( !h )
+		return 0;
+
+	return h->errnocp;
+}
 
 uint64_t c3db_file_size( C3HDL *h )
 {

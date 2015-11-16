@@ -12,18 +12,25 @@ int __c3db_v1_parse_retain_part( char *str, int len, V1CFG *cfg )
 	  	return -1;
 
 	period = strtoull( str, &c, 10 );
-	switch( *c )
+
+	// m or u means msec or usec,
+	// nothing means sec, so we may
+	// have to convert to usec
+	if( *c == 'm' || *c == 'M' )
 	{
-		case ':':
-			// this is in seconds
-			tt_to_us( period, period );
-			break;
-		case 'u':
-			// already microseconds
-			break;
-		default:
-			return -1;
+		ms_to_us( period, period );
+		c++;
 	}
+	else if( *c == 'u' || *c == 'U' )
+		c++;
+	else if( *c == ':' )
+	{
+		tt_to_us( period, period );
+	}
+
+	// and then check for a :
+	if( *c != ':' )
+		return -1;
 
 	c++;
 
