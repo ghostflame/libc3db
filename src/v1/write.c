@@ -26,7 +26,7 @@ int c3db_v1_write( C3HDL *h, int count, C3PNT *points )
         for( j = 0; j < count; j++, pt++ )
         {
             // get the timestamp and find the bucket
-            ts  = pt->ts - ( pt->ts % cfg->period );
+            ts = pt->ts - ( pt->ts % cfg->period );
 
             // find the bucket to update
             bk = base + ( ( ts / cfg->period ) % cfg->count );
