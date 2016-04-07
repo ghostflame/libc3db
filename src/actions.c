@@ -1,7 +1,7 @@
 #include "c3_internal.h"
 
 
-int c3db_read_us( C3HDL *h, uint64_t from, uint64_t to, int metric, C3RES *res )
+int c3db_read_ns( C3HDL *h, int64_t from, int64_t to, int metric, C3RES *res )
 {
 	if( !h )
 	  	return C3E_BAD_HANDLE;
@@ -22,26 +22,41 @@ int c3db_read_us( C3HDL *h, uint64_t from, uint64_t to, int metric, C3RES *res )
 	return (h->f_read)( h, from, to, metric, res );
 }
 
-int c3db_read( C3HDL *h, time_t from, time_t to, int metric, C3RES *res )
+
+int c3db_read_us( C3HDL *h, int64_t from, int64_t to, int metric, C3RES *res )
 {
-	uint64_t t, f;
+	return c3db_read_ns( h, from * 1000, to * 1000, metric, res );
+}
 
-	tt_to_us( from, f );
-	tt_to_us( to,   t );
+int c3db_read_tt( C3HDL *h, time_t from, time_t to, int metric, C3RES *res )
+{
+	int64_t t, f;
 
-	return c3db_read_us( h, f, t, metric, res );
+	tt_to_ns( from, f );
+	tt_to_ns( to,   t );
+
+	return c3db_read_ns( h, f, t, metric, res );
 }
 
 int c3db_read_tv( C3HDL *h, struct timeval from, struct timeval to, int metric, C3RES *res )
 {
-	uint64_t t, f;
+	int64_t t, f;
 
-	tv_to_us( from, f );
-	tv_to_us( to,   t );
+	tv_to_ns( from, f );
+	tv_to_ns( to,   t );
 
-	return c3db_read_us( h, f, t, metric, res );
+	return c3db_read_ns( h, f, t, metric, res );
 }
 
+int c3db_read_ts( C3HDL *h, struct timespec from, struct timespec to, int metric, C3RES *res )
+{
+	int64_t t, f;
+
+	ts_to_ns( from, f );
+	ts_to_ns( to,   t );
+
+	return c3db_read_ns( h, f, t, metric, res );
+}
 
 
 int c3db_write( C3HDL *h, int count, C3PNT *points )

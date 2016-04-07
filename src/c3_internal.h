@@ -2,6 +2,7 @@
 #define C3DB_INT_H
 
 #include <stdarg.h>
+#include <features.h>
 #include <sys/mman.h>
 #include "../include/c3db.h"
 
@@ -22,7 +23,7 @@
 typedef int  c3_open_f   ( C3HDL * );
 typedef int  c3_create_f ( C3HDL *, char * );
 typedef int  c3_close_f  ( C3HDL * );
-typedef int  c3_read_f   ( C3HDL *, uint64_t, uint64_t, int, C3RES * );
+typedef int  c3_read_f   ( C3HDL *, int64_t, int64_t, int, C3RES * );
 typedef int  c3_write_f  ( C3HDL *, int, C3PNT * );
 typedef int  c3_flush_f  ( C3HDL *, int * );
 typedef int  c3_dump_f   ( C3HDL *, FILE *, int, int );
@@ -47,8 +48,8 @@ enum c3db_states
 
 struct c3db_handle
 {
-    void            *   map;
-    void            *   hdr;
+	void			*	map;
+	void			*	hdr;
 
 	char			*	fullpath;
 	int					fd;
@@ -56,7 +57,7 @@ struct c3db_handle
 	uint64_t			fsize;
 
 
-    int                 updates;
+	int					updates;
 	int					errnum;
 	int					errnocp;
 

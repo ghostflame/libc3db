@@ -38,9 +38,9 @@ int add_point( PDATA **list, char *str, int len, int convert )
 	*list     = new;
 
 	new->point.val = strtof( c, NULL );
-	new->point.ts  = strtoull( str, NULL, 10 );
+	new->point.ts  = strtoll( str, NULL, 10 );
 	if( convert )
-		tt_to_us( new->point.ts, new->point.ts );
+		tt_to_ns( new->point.ts, new->point.ts );
 
 	return 0;
 }

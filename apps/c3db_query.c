@@ -33,11 +33,14 @@ void us_check( int us )
 		exit( fprintf( stderr, "Cannot mix usec and sec timings.\n" ) );
 }
 
+
 int main( int ac, char **av )
 {
-  	uint64_t begin, end, from, to, dur;
-  	char *out, *file, *metric;
+	int64_t begin, end, from, to, dur;
+	char *out, *file, *metric;
 	int oc, met, i, us;
+	struct timeval tv;
+	time_t tt;
 	C3RES res;
 	C3PNT *p;
 	C3HDL *h;
@@ -51,6 +54,7 @@ int main( int ac, char **av )
 	dur    = 0;
 	from   = 0;
 	to     = 0;
+	us     = 0;
 	fh     = stdout;
 
 	while( ( oc = getopt( ac, av, "hf:o:m:b:e:d:B:E:D:" ) ) != -1 )
@@ -70,27 +74,27 @@ int main( int ac, char **av )
 				break;
 			case 'B':
 				us    = 1;
-				begin = strtoull( optarg, NULL, 10 );
+				begin = strtoll( optarg, NULL, 10 );
 				break;
 			case 'b':
 				us_check( us );
-				begin = strtoull( optarg, NULL, 10 );
+				begin = strtoll( optarg, NULL, 10 );
 				break;
 			case 'E':
 				us  = 1;
-				end = strtoull( optarg, NULL, 10 );
+				end = strtoll( optarg, NULL, 10 );
 				break;
 			case 'e':
 				us_check( us );
-				end = strtoull( optarg, NULL, 10 );
+				end = strtoll( optarg, NULL, 10 );
 				break;
 			case 'D':
 				us  = 1;
-				dur = strtoull( optarg, NULL, 10 );
+				dur = strtoll( optarg, NULL, 10 );
 				break;
 			case 'd':
 				us_check( us );
-				dur = strtoull( optarg, NULL, 10 );
+				dur = strtoll( optarg, NULL, 10 );
 				break;
 		}
 
@@ -157,7 +161,6 @@ int main( int ac, char **av )
 		return 1;
 	}
 
-
 	if( c3db_read_us( h, from, to, met, &res ) )
 	{
 		fprintf( stderr, "Failed to query C3DB '%s' -- %s\n", file, c3db_error( h ) );
@@ -166,10 +169,16 @@ int main( int ac, char **av )
 
 	if( us )
 		for( p = res.points, i = 0; i < res.count; i++, p++ )
-			fprintf( fh, "ts: %10lu.%06lu   %s: %f\n", p->ts / 1000000, p->ts % 1000000, metric, p->val );
+		{
+			ns_to_tv( p->ts, tv );
+			fprintf( fh, "ts: %10ld.%06ld   %s: %f\n", tv.tv_sec, tv.tv_usec, metric, p->val );
+		}
 	else
 		for( p = res.points, i = 0; i < res.count; i++, p++ )
-			fprintf( fh, "ts: %10ld   %s: %f\n", p->ts, metric, p->val );
+		{
+			ns_to_tt( p->ts, tt );
+			fprintf( fh, "ts: %10ld   %s: %f\n", tt, metric, p->val );
+		}
 
 	c3db_close( h );
 

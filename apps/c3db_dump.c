@@ -11,8 +11,7 @@ void usage( void )
 	printf( " -H           Do not dump the header.\n" );
 	printf( " -D           Do not dump the data.\n" );
 	printf( " -E           Do not show empty slots.\n" );
-	printf( " -u           Write sec.usec timestamps.\n" );
-	printf( " -U           Write usec timestamps.\n" );
+	printf( " -t <fmt>     Select timestamp format.\n" );
 	printf( " -f <name>    C3DB file to dump.\n" );
 	printf( " -o <file>    Write to file rather than stdout.\n\n" );
 
@@ -22,7 +21,7 @@ void usage( void )
 
 int main( int ac, char **av )
 {
-	int oc, empty, hdr, data, us;
+	int oc, empty, hdr, data, tf;
 	char *target, *source;
 	FILE *fh;
 	C3HDL *h;
@@ -33,9 +32,9 @@ int main( int ac, char **av )
 	hdr    = 1;
 	data   = 1;
 	fh     = stdout;
-	us     = C3DB_TS_SEC;
+	tf     = C3DB_TS_SEC;
 
-	while( ( oc = getopt( ac, av, "hEHDUuf:o:" ) ) != -1 )
+	while( ( oc = getopt( ac, av, "hEHDt:f:o:" ) ) != -1 )
 		switch( oc )
 		{
 			case 'h':
@@ -50,11 +49,8 @@ int main( int ac, char **av )
 			case 'E':
 				empty = 0;
 				break;
-			case 'u':
-				us = C3DB_TS_TVAL;
-				break;
-			case 'U':
-				us = C3DB_TS_USEC;
+			case 't':
+				tf = c3db_tsformat( optarg );
 				break;
 			case 'f':
 				source = strdup( optarg );
@@ -90,9 +86,9 @@ int main( int ac, char **av )
 
 	// dump and close
 	if( hdr )
-		c3db_dump_header( h, fh, us );
+		c3db_dump_header( h, fh, tf );
 	if( data )
-		c3db_dump( h, fh, empty, us );
+		c3db_dump( h, fh, empty, tf );
 
 	c3db_close( h );
 

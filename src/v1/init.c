@@ -38,7 +38,7 @@ int c3db_v1_create( C3HDL *h, char *retention )
 	h->state = C3DB_ST_CREATING;
 
 	// create a header
-	sz			 = sizeof( V1HDR ) + ( cct * sizeof( V1CFG ) );
+	sz           = sizeof( V1HDR ) + ( cct * sizeof( V1CFG ) );
 	hdr          = alloc3( sz );
 	hdr->magic   = C3DB_MAGIC;
 	hdr->version = h->version;
@@ -82,7 +82,6 @@ int c3db_v1_create( C3HDL *h, char *retention )
 	if( ( h->fd = open( h->fullpath, O_RDWR|O_CREAT|O_EXCL, 0644 ) ) < 0 )
 	{
 		GETERRNO;
-fprintf( stderr, "Failed %s at open stage.\n", h->fullpath );
 		free( hdr );
 		return -2;
 	}
@@ -94,7 +93,6 @@ fprintf( stderr, "Failed %s at open stage.\n", h->fullpath );
 		h->errnum  = C3E_SEE_ERRNO;
 		free( hdr );
 		close( h->fd );
-fprintf( stderr, "Failed %s at posix_fallocate.\n", h->fullpath );
 		unlink( h->fullpath );
 		return -3;
 	}
@@ -103,7 +101,6 @@ fprintf( stderr, "Failed %s at posix_fallocate.\n", h->fullpath );
 	if( write( h->fd, hdr, hdr->hsize ) != hdr->hsize )
 	{
 		GETERRNO;
-fprintf( stderr, "Failed %s at write header.\n", h->fullpath );
 		free( hdr );
 		close( h->fd );
 		unlink( h->fullpath );

@@ -1,9 +1,9 @@
-CC      = /usr/bin/gcc -Wall -Wshadow
+CC      = /usr/bin/gcc -std=gnu99 -Wall -Wshadow -Wpedantic
 
 BINDIR  = ../bin
 LIBDIR  = ../lib
 INCDIR  = ../include
-INSDIR  = /usr/bin
+INSDIR  = $(DESTDIR)/usr/bin
 
 DFLAGS  = -g -pg -ggdb3
 CFLAGS  = -I$(INCDIR)
