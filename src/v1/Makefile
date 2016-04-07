@@ -1,4 +1,4 @@
-CC     = /usr/bin/gcc -Wall -Wshadow
+CC     = /usr/bin/gcc -std=gnu99 -Wall -Wshadow -Wpedantic -Wno-pointer-arith
 
 NAME   = v1
 

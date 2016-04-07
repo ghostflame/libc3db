@@ -11,7 +11,9 @@ void usage( void )
 	printf( " -V           More verbose output.\n" );
 	printf( " -f <file>    Filename to write (default: %s)\n", DEFAULT_FILE );
 	printf( " -i <file>    Input file containing points\n" );
-	printf( " -p <point>   Data point ( <ts>:<value> )\n\n" );
+	printf( " -I <file>    Input file containing usec timestamp points\n" );
+	printf( " -p <point>   Data point ( <ts>:<value> )\n" );
+	printf( " -P <point>   Data point ( <us>:<value> )\n\n" );
 
 	printf( "Input file format should be lines of points in the same format as -p.\n\n" );
 
@@ -19,7 +21,7 @@ void usage( void )
 }
 
 
-int add_point( PDATA **list, char *str, int len )
+int add_point( PDATA **list, char *str, int len, int convert )
 {
 	PDATA *new;
 	char *c;
@@ -35,14 +37,16 @@ int add_point( PDATA **list, char *str, int len )
 	new->next = *list;
 	*list     = new;
 
-	new->point.ts  = strtoul( str, NULL, 10 );
 	new->point.val = strtof( c, NULL );
+	new->point.ts  = strtoll( str, NULL, 10 );
+	if( convert )
+		tt_to_ns( new->point.ts, new->point.ts );
 
 	return 0;
 }
 
 
-int read_in_file( char *name, PDATA **list )
+int read_in_file( char *name, PDATA **list, int convert )
 {
 	size_t blen = 0;
   	char *buf = NULL;
@@ -69,7 +73,7 @@ int read_in_file( char *name, PDATA **list )
 			buf[--len] = '\0';
 
 		// don't error out, carry on
-		if( add_point( list, buf, len ) ) {
+		if( add_point( list, buf, len, convert ) ) {
 			fprintf( stderr, "Bad input on line %d of file '%s': %s\n", lc, name, buf );
 		}
 	}
@@ -84,18 +88,19 @@ int read_in_file( char *name, PDATA **list )
 int main( int ac, char **av )
 {
   	int oc, count, i, written, chat;
-  	char *in, *file;
+  	char *in, *inu, *file;
 	PDATA *list, *p;
 	C3PNT *points;
 	C3HDL *h;
 
 	file  = NULL;
 	in    = NULL;
+	inu   = NULL;
 	list  = NULL;
 	count = 0;
 	chat  = 0;
 
-	while( ( oc = getopt( ac, av, "hVf:i:p:" ) ) != -1 )
+	while( ( oc = getopt( ac, av, "hVf:I:i:p:P:" ) ) != -1 )
 		switch( oc )
 		{
 			case 'h':
@@ -105,7 +110,14 @@ int main( int ac, char **av )
 				chat = 1;
 				break;
 			case 'p':
-				if( add_point( &list, optarg, strlen( optarg ) ) )
+				if( add_point( &list, optarg, strlen( optarg ), 1 ) )
+				{
+					fprintf( stderr, "Invalid argument: %s\n", optarg );
+					return 1;
+				}
+				break;
+			case 'P':
+				if( add_point( &list, optarg, strlen( optarg ), 0 ) )
 				{
 					fprintf( stderr, "Invalid argument: %s\n", optarg );
 					return 1;
@@ -117,6 +129,9 @@ int main( int ac, char **av )
 			case 'i':
 				in = strdup( optarg );
 				break;
+			case 'I':
+				inu = strdup( optarg );
+				break;
 		}
 
 	if( !file ) 
@@ -125,13 +140,27 @@ int main( int ac, char **av )
 		return 1;
 	}
 
-	if( in && read_in_file( in, &list ) )
+	if( in )
 	{
-		fprintf( stderr, "Could not read in file '%s'.\n", in );
-		return 1;
+		if( read_in_file( in, &list, 1 ) )
+		{
+			fprintf( stderr, "Could not read in file '%s'.\n", in );
+			return 1;
+		}
+		else if( chat )
+			printf( "Read input file '%s'\n", in );
 	}
-	else if( chat )
-		printf( "Read input file '%s'\n", in );
+	else if( inu )
+	{
+		if( read_in_file( inu, &list, 1 ) )
+		{
+			fprintf( stderr, "Could not read in file '%s'.\n", inu );
+			return 1;
+		}
+		else if( chat )
+			printf( "Read input file '%s'\n", inu );
+	}
+
 
 	if( !list )
 	{

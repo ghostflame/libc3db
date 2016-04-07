@@ -5,26 +5,58 @@
 // parse one chunk of a retention string
 int __c3db_v1_parse_retain_part( char *str, int len, V1CFG *cfg )
 {
-  	unsigned long span, period, count;
-	char *c, *s;
+	int64_t span, period, count;
+	char *c, *s, u;
 
 	if( !str || !*str || !len )
-	  	return -1;
+		return -1;
 
-	period = strtoul( str, &c, 10 );
-	if( *c != ':' )
-	  	return -1;
-	c++;
+	period = strtoull( str, &c, 10 );
 
-	span = strtoul( c, &s, 10 );
+	u = tolower( *c );
+
+	// m, u or n means msec, usec or nsec,
+	// nothing means sec, so we may
+	// have to convert to usec
+	switch( u )
+	{
+		case 'm':
+			ms_to_ns( period, period );
+			c++;
+			break;
+		case 'u':
+			us_to_ns( period, period );
+			c++;
+			break;
+		case 'n':
+			c++;
+			break;
+		case ':':
+			tt_to_ns( period, period );
+			break;
+	}
+
+	// and then check for a :
+	if( *c++ != ':' )
+		return -1;
+
+	span = strtoull( c, &s, 10 );
 
 	// check if either is 0
 	if( !period || !span )
 		return -2;
 
+	u = tolower( *s );
+
 	// *s might be a multiplier or \0
-	switch( *s )
+	switch( u )
 	{
+		case 's':
+				tt_to_ns( span, span );
+				break;
+		case 'u':
+				us_to_ns( span, span );
+				break;
 		case 'y':
 				span *= 52;
 		case 'w':
@@ -35,14 +67,14 @@ int __c3db_v1_parse_retain_part( char *str, int len, V1CFG *cfg )
 				span *= 60;
 		case 'm':
 				span *= 60;
-		default:
+		case 'n':
+				tt_to_ns( span, span );
 				break;
+		default:
+				return -3;
 	}
 
 	count = span / period;
-
-	if( !span )
-	  	return -3;
 
 	cfg->period = period;
 	cfg->count  = count;

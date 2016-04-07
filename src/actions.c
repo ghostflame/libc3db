@@ -1,7 +1,7 @@
 #include "c3_internal.h"
 
 
-int c3db_read( C3HDL *h, time_t from, time_t to, int metric, C3RES *res )
+int c3db_read_ns( C3HDL *h, int64_t from, int64_t to, int metric, C3RES *res )
 {
 	if( !h )
 	  	return C3E_BAD_HANDLE;
@@ -20,6 +20,42 @@ int c3db_read( C3HDL *h, time_t from, time_t to, int metric, C3RES *res )
 	res->rtype = metric;
 
 	return (h->f_read)( h, from, to, metric, res );
+}
+
+
+int c3db_read_us( C3HDL *h, int64_t from, int64_t to, int metric, C3RES *res )
+{
+	return c3db_read_ns( h, from * 1000, to * 1000, metric, res );
+}
+
+int c3db_read_tt( C3HDL *h, time_t from, time_t to, int metric, C3RES *res )
+{
+	int64_t t, f;
+
+	tt_to_ns( from, f );
+	tt_to_ns( to,   t );
+
+	return c3db_read_ns( h, f, t, metric, res );
+}
+
+int c3db_read_tv( C3HDL *h, struct timeval from, struct timeval to, int metric, C3RES *res )
+{
+	int64_t t, f;
+
+	tv_to_ns( from, f );
+	tv_to_ns( to,   t );
+
+	return c3db_read_ns( h, f, t, metric, res );
+}
+
+int c3db_read_ts( C3HDL *h, struct timespec from, struct timespec to, int metric, C3RES *res )
+{
+	int64_t t, f;
+
+	ts_to_ns( from, f );
+	ts_to_ns( to,   t );
+
+	return c3db_read_ns( h, f, t, metric, res );
 }
 
 
@@ -101,7 +137,7 @@ int c3db_close( C3HDL *h )
 	return 0;
 }
 
-int c3db_dump( C3HDL *h, FILE *to, int show_empty )
+int c3db_dump( C3HDL *h, FILE *to, int show_empty, int ts_fmt )
 {
 	if( !h )
 	  	return C3E_BAD_HANDLE;
@@ -109,15 +145,21 @@ int c3db_dump( C3HDL *h, FILE *to, int show_empty )
 	if( h->state == C3DB_ST_DIRTY )
 	  	BAD( C3E_BAD_STATE );
 
-	return (h->f_dump)( h, to, show_empty );
+	if( ts_fmt < C3DB_TS_SEC || ts_fmt >= C3DB_TS_MAX )
+		BAD( C3E_BAD_FORMAT );
+
+	return (h->f_dump)( h, to, show_empty, ts_fmt );
 }
 
-int c3db_dump_header( C3HDL *h, FILE *to )
+int c3db_dump_header( C3HDL *h, FILE *to, int ts_fmt )
 {
 	if( !h )
 	  	return C3E_BAD_HANDLE;
 
-	(h->f_hdump)( h, to );
+	if( ts_fmt < C3DB_TS_SEC || ts_fmt >= C3DB_TS_MAX )
+		BAD( C3E_BAD_FORMAT );
+
+	(h->f_hdump)( h, to, ts_fmt );
 
 	return 0;
 }

@@ -1,16 +1,11 @@
-CC     = /usr/bin/gcc -Wall -Wshadow
-
-MAXV   = 0
-MINV   = 1
-MICV   = 0
-
-VER    = $(MAXV).$(MINV).$(MICV)
+CC     = /usr/bin/gcc -std=gnu99 -Wall -Wshadow -Wpedantic
 
 LNM    = libc3db
 LIB    = $(LNM).so
+LIBV   = $(LIB).$(shell sed -rn 's/^Version:\t(.*)/\1/p' ../libc3db.spec)
 RKV    = $(LNM).a
 LDIR   = ../lib
-LIBT   = $(LDIR)/$(LIB)
+LIBT   = $(LDIR)/$(LIBV)
 RKVT   = $(LDIR)/$(RKV)
 
 IHDR   = ../include/c3db.h
@@ -21,13 +16,13 @@ DBVS   = v1
 DBVO   = $(DBVS:%=%.o)
 DBVT   = all
 
-LIBDIR = /usr/lib
-INCDIR = /usr/include
+LIBDIR = $(DESTDIR)/usr/lib
+INCDIR = $(DESTDIR)/usr/include
 
 IFLAGS = -I.
 DFLAGS = -g -pg -ggdb3
 CFLAGS = $(IFLAGS) -fPIC -DPIC
-LFLAGS = -shared -fPIC -DPIC -Wl,-soname,$(LIB).$(MAXV)
+LFLAGS = -shared -fPIC -DPIC -Wl,-soname,$(LIB)
 
 all: versions $(LIBT) $(RKVT)
 
@@ -46,7 +41,7 @@ versions:
 $(LIBT): $(OBJS)
 	@mkdir -p $(LDIR)
 	$(CC) -o $(LIBT) $(LFLAGS) $(OBJS) $(DBVO)
-	@( cd ../lib; ln -s $(LIB) $(LIB).$(MAXV) )
+	@( cd ../lib; ln -s $(LIBV) $(LIB) )
 	@echo "Built C3/trivalent database lib."
 
 $(RKVT): $(OBJS)
@@ -57,22 +52,21 @@ $(RKVT): $(OBJS)
 
 install:
 	@install -m644 $(RKVT) $(LIBDIR)/$(RKV)
-	@install -m644 $(LIBT) $(LIBDIR)/$(LIB).$(VER)
-	@rm -f $(LIBDIR)/$(LIB).$(MAXV) $(LIBDIR)/$(LIB)
-	@ln -s $(LIBDIR)/$(LIB).$(VER) $(LIBDIR)/$(LIB).$(MAXV)
-	@ln -s $(LIBDIR)/$(LIB).$(VER) $(LIBDIR)/$(LIB)
+	@install -m644 $(LIBT) $(LIBDIR)/$(LIBV)
+	@rm -f $(LIBDIR)/$(LIB)
+	@ln -s $(LIBDIR)/$(LIBV) $(LIBDIR)/$(LIB)
 	@install -m644 $(IHDR) $(INCDIR)/$(IHDR)
 	@ldconfig
 	@echo "Installed C3/trivalent database libs."
 
 uninstall:
-	@rm -f $(LIBDIR)/$(LIB).$(VER) $(LIBDIR)/$(LIB).$(MAXV) $(LIBDIR)/$(LIB)
+	@rm -f $(LIBDIR)/$(LIB) $(LIBDIR)/$(LIBV) $(LIBDIR)/$(RKV) $(INCDIR)/$(IHDR)
 	@ldconfig
 	@echo "Uninstalled C3/trivalent database libs."
 
 clean:
 	@-for d in $(DBVS); do ( cd $$d; $(MAKE) clean ); done
 	@rm -f core* *.core $(OBJS)
-	@( cd ../lib && rm -f $(LIB) $(LIB).$(MAXV) $(RKV) )
+	@( cd ../lib && rm -f $(LIB) $(LIBV) $(RKV) )
 
 

@@ -22,9 +22,9 @@ typedef struct	c3db_v1_offrange	V1RNG;
 
 struct c3db_v1_config
 {
-	uint32_t			count;
-	uint32_t			period;
-	uint64_t			offset;
+	int64_t				count;
+	int64_t				period;
+	int64_t				offset;
 };
 
 
@@ -37,8 +37,18 @@ struct c3db_v1_header
 	uint32_t			cksum;
 	uint16_t			bcount;
 	uint16_t			_padding;
+#ifdef __GNUC__
+#if __GNUC_PREREQ(4,8)
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+#endif
 	// this is now 8-byte-aligned
 	unsigned char		cfg[0];
+#ifdef __GNUC__
+#if __GNUC_PREREQ(4,8)
+#pragma GCC diagnostic pop
+#endif
+#endif
 };
 
 #define c3db_v1_GET_CONFIG( n )	( n >= h->bcount ) ? NULL : (V1CFG *) ( h->cfg + ( n * sizeof( V1CFG ) ) )
@@ -46,7 +56,7 @@ struct c3db_v1_header
 
 struct c3db_v1_bucket
 {
-	uint32_t			ts;
+	int64_t				ts;
 	uint32_t			count;
 	float				sum;
 	float				min;
@@ -55,13 +65,13 @@ struct c3db_v1_bucket
 
 struct c3db_v1_timespan
 {
-	time_t				from;
-	time_t				to;
+	int64_t				from;
+	int64_t				to;
 };
 
 struct c3db_v1_offrange
 {
-    uint64_t            start;
+	uint64_t			start;
 	int32_t				count;
 };
 
@@ -70,7 +80,7 @@ struct c3db_v1_request
 	V1SPN				orig;
 	V1SPN				fetch;
 	V1CFG			*	cfg;
-	uint32_t			now;
+	int64_t				now;
 	int32_t				ranges;
 	V1RNG				range[2];
 };
@@ -84,3 +94,4 @@ int c3db_v1_parse_retain_string( char *retain, V1CFG **cfg, int *count );
 #define c3db_v1_config_offset( c, t ) ( c->offset + ( ( ( t / c->period ) % c->count ) * sizeof( V1BKT ) ) )
 
 #endif
+

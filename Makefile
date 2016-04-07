@@ -1,5 +1,7 @@
 DIRS   = src apps
-LIBDIR = /usr/lib
+DOCDIR = $(DESTDIR)/usr/share/doc/libc3db
+MANDIR = $(DESTDIR)/usr/share/man
+
 
 .PHONY: clean debug test
 
@@ -21,9 +23,15 @@ clean:
 
 install:
 	@for d in $(DIRS); do ( cd $$d && $(MAKE) $(MFLAGS) install ); done
+	@mkdir -p $(DOCDIR)
+	@install -m 644 dist/db_format.txt $(DOCDIR)/db_format.txt
+	@mkdir -p $(MANDIR)/man3
+	@gzip -c dist/libc3db.3 > $(MANDIR)/man3/libc3db.3.gz
 
 uninstall:
 	@for d in $(DIRS); do ( cd $$d && $(MAKE) $(MFLAGS) uninstall ); done
+	@rm -rf $(DOCDIR)
+	@rm -f $(MANDIR)/man3/libc3db.3.gz
 
 test:
 	@( cd tests && ./run.sh )

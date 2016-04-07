@@ -3,7 +3,9 @@
 BINDIR="../bin"
 DFILE="data/test.c3db"
 IFILE="data/input.txt"
-OFILE="data/dump.txt"
+OFILE="data/dump.sec.txt"
+TFILE="data/dump.tval.txt"
+UFILE="data/dump.usec.txt"
 QFILE="data/query.txt"
 RETAIN="10:10d;60:40d;1200:500d"
 SECONDS=$(date +%s)
@@ -61,7 +63,21 @@ fi
 echo "Dumping database into $OFILE"
 ${BINDIR}/c3db_dump -E -f $DFILE -o $OFILE
 if [ $? -ne 0 ]; then
-	echo "Failed to dump database.  Test ended badly."
+	echo "Failed to dump database (sec).  Test ended badly."
+	exit 1
+fi
+
+echo "Dumping database into $TFILE"
+${BINDIR}/c3db_dump -E -f $DFILE -t tval -o $TFILE
+if [ $? -ne 0 ]; then
+	echo "Failed to dump database (tval).  Test ended badly."
+	exit 1
+fi
+
+echo "Dumping database into $UFILE"
+${BINDIR}/c3db_dump -E -f $DFILE -t usec -o $UFILE
+if [ $? -ne 0 ]; then
+	echo "Failed to dump database (usec).  Test ended badly."
 	exit 1
 fi
 

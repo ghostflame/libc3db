@@ -1,0 +1,55 @@
+.\" Libc3db manual page
+.TH LIBC3DB "3" "Dec 2015"
+.SH NAME
+libc3db \- time-series database
+.SH SYNOPSIS
+
+\fB#include <c3db.h>\fP
+
+\fBC3HDL *c3db_init( char *\fIpath\fB, int \fIrw\fB );\fP
+.nf
+\fBC3HDL *c3db_init( char *\fIpath\fB, int \fIversion\fB, char *\fIretention\fB );\fP
+.nf
+\fBint c3db_close( C3HDL *\fIh\fB );\fP
+
+\fBint c3db_read( C3HDL *\fIh\fB, time_t \fIfrom\fB, time_t \fIto\fB, int \fImetric\fB, C3RES *\fIres\fB );\fP
+.nf
+\fBint c3db_read_tv( C3HDL *\fIh\fB, struct timeval \fIfrom\fB, struct timeval \fIto\fB, int \fImetric\fB, C3RES *\fIres\fB );\fP
+.nf
+\fBint c3db_read_ts( C3HDL *\fIh\fB, struct timespec \fIfrom\fB, struct timespec \fIto\fB, int \fImetric\fB, C3RES *\fIres\fB );\fP
+.nf
+\fBint c3db_read_us( C3HDL *\fIh\fB, uint64_t \fIfrom\fB, uint64_t \fIto\fB, int \fImetric\fB, C3RES *\fIres\fB );\fP
+.nf
+\fBint c3db_read_ns( C3HDL *\fIh\fB, uint64_t \fIfrom\fB, uint64_t \fIto\fB, int \fImetric\fB, C3RES *\fIres\fB );\fP
+
+\fBint c3db_write( C3HDL *\fIh\fB, int \fIcount\fB, C3PNT *\fIpoints\fB );\fB
+.nf
+\fBint c3db_flush( C3HDL *\fIh\fB, int *\fIwritten\fB );\fP
+
+\fBchar *c3db_errstr( int \fIerrnum\fB )\fP;
+.nf
+\fBchar *c3db_error( C3HDL *\fIh\fB );\fP
+.nf
+\fBcint c3db_status( C3HDL *\fIh\fB );\fP
+.nf
+\fBcint c3db_errno( C3HDL *\fIh\fB );\fP
+
+\fBuint64_t c3db_file_size( C3HDL *\fIh\fB );\fP
+.nf
+\fBint c3db_dump( C3HDL *\fIh\fB, FILE *\fIto\fB, int \fIshow_empty\fB, int \fIts_fmt\fB );\fP
+.nf
+\fBint c3db_dump_header( C3HDL *\fIh\fB, FILE *\fIto\fB, int \fIts_fmt\fB );\fP
+.nf
+\fBint c3db_metric( char *\fIname\fB );\fP
+.nf
+\fBchar *c3db_metric_name( int \fImetric\fB );\fP
+
+
+
+.SH DESCRIPTION
+
+.SH BUGS
+
+.SH SEE ALSO
+
+.SH AUTHOR

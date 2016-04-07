@@ -8,13 +8,13 @@ Offset		Len		What
 8			4		Config checksum
 12			2		Config block count
 14			2		Empty
-16			16		Config block { u32 count1, u32 interval1, u64 offset1 }
-32			16		Config block { u32 count2, u32 interval2, u64 offset2 }
+16			16		Config block { i64 count1, i64 interval1, u64 offset1 }
+32			16		Config block { i64 count2, i64 interval2, u64 offset2 }
 ...
 
-offset1		20		Bucket { u32 timestamp, u32 count, flt sum, flt min, flt max }
+offset1		20		Bucket { i64 nsec timestamp, u32 count, flt sum, flt min, flt max }
 ...
-offset2		20		Bucket { u32 timestamp, u32 count, flt sum, flt min, flt max }
+offset2		20		Bucket { i64 nsec timestamp, u32 count, flt sum, flt min, flt max }
 ...
 
 offset1 = after all the configs

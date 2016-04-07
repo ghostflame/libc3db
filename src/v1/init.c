@@ -38,7 +38,7 @@ int c3db_v1_create( C3HDL *h, char *retention )
 	h->state = C3DB_ST_CREATING;
 
 	// create a header
-	sz			 = sizeof( V1HDR ) + ( cct * sizeof( V1CFG ) );
+	sz           = sizeof( V1HDR ) + ( cct * sizeof( V1CFG ) );
 	hdr          = alloc3( sz );
 	hdr->magic   = C3DB_MAGIC;
 	hdr->version = h->version;
@@ -81,7 +81,7 @@ int c3db_v1_create( C3HDL *h, char *retention )
 	// create a file
 	if( ( h->fd = open( h->fullpath, O_RDWR|O_CREAT|O_EXCL, 0644 ) ) < 0 )
 	{
-	  	GETERRNO;
+		GETERRNO;
 		free( hdr );
 		return -2;
 	}
@@ -89,7 +89,7 @@ int c3db_v1_create( C3HDL *h, char *retention )
 	// allocate space
 	if( ( i = posix_fallocate( h->fd, 0, h->fsize ) ) != 0 )
 	{
-	  	h->errnocp = i;
+		h->errnocp = i;
 		h->errnum  = C3E_SEE_ERRNO;
 		free( hdr );
 		close( h->fd );
@@ -100,7 +100,7 @@ int c3db_v1_create( C3HDL *h, char *retention )
 	// and write the header
 	if( write( h->fd, hdr, hdr->hsize ) != hdr->hsize )
 	{
-	  	GETERRNO;
+		GETERRNO;
 		free( hdr );
 		close( h->fd );
 		unlink( h->fullpath );
@@ -116,16 +116,16 @@ int c3db_v1_create( C3HDL *h, char *retention )
 int c3db_v1_close( C3HDL *h )
 {
 	if( h->state == C3DB_ST_DIRTY )
-	  	c3db_v1_flush( h, NULL );
+		c3db_v1_flush( h, NULL );
 
 	if( h->fullpath )
-	  	free( h->fullpath );
+		free( h->fullpath );
 
-    if( h->map )
-        munmap( h->map, h->fsize );
+	if( h->map )
+		munmap( h->map, h->fsize );
 
 	if( h->fd >= 0 )
-	  	close( h->fd );
+		close( h->fd );
 
 	free( h );
 	return 0;
