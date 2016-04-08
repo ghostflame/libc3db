@@ -32,8 +32,8 @@ install:
 	@for d in $(DIRS); do ( cd $$d && $(MAKE) $(MFLAGS) all ); done
 	@install -m755 bin/c3db_* $(BINDIR)
 	@install -m644 include/c3db.h $(INCDIR)
-	@install -m755 lib/libcd3b.so $(LIBDIR)/libc3db.so.$(VERSION)
-	@install -m755 lib/libcd3b.a $(LIBDIR)
+	@install -m755 lib/libc3db.so $(LIBDIR)/libc3db.so.$(VERSION)
+	@install -m755 lib/libc3db.a $(LIBDIR)
 	@ln -s $(LIBDIR)/libc3db.so.$(VERSION) $(LIBDIR)/libc3db.so
 	@ln -s $(LIBDIR)/libc3db.so.$(VERSION) $(LIBDIR)/libc3db.so.$(VMAJ)
 	@gzip -c dist/libc3db.3 > $(MANDIR)/man3/libc3db.3.gz
