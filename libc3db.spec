@@ -1,5 +1,5 @@
 Name:		libc3db
-Version:	0.3.0
+Version:	0.1.0
 Release:	1%{?dist}
 Summary:	A library for managing C3DB format time-series databases.
 
