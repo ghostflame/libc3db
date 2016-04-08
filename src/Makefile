@@ -14,7 +14,6 @@ OBJS   = utils.o init.o actions.o
 HDRS   = $(IHDR) c3_internal.h
 
 DBVS   = v1
-DBVO   = $(DBVS:%=%.o)
 DBVT   = all
 
 IFLAGS = -I.
@@ -36,12 +35,12 @@ versions:
 
 $(LIBT): $(OBJS)
 	@mkdir -p $(LDIR)
-	$(CC) -o $(LIBT) $(LFLAGS) $(OBJS) $(DBVO)
+	$(CC) -o $(LIBT) $(LFLAGS) $(OBJS) $(DBVS)/*.o
 	@echo "Built C3/trivalent database lib."
 
 $(RKVT): $(OBJS)
 	@mkdir -p $(LDIR)
-	@ar crs $(RKVT) $(OBJS) $(DBVO)
+	@ar crs $(RKVT) $(OBJS) $(DBVS)/*.o
 	@ranlib $(RKVT)
 	@echo "Built C3/trivalent database archive."
 
