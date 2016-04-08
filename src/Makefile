@@ -23,23 +23,20 @@ LFLAGS = -shared -fPIC -DPIC -Wl,-soname,$(LIB)
 
 all: CFLAGS += -O2
 all: DBVT = all
-all: versions $(LIBT) $(RKVT)
+all: versions lib
 
 debug: CFLAGS += $(DFLAGS)
 debug: LFLAGS += $(DFLAGS)
 debug: DBVT = debug
-debug: versions $(LIBT) $(RKVT)
+debug: versions lib
 
 versions:
 	@-for d in $(DBVS); do ( cd $$d; $(MAKE) $(MFLAGS) $(DBVT) ); done
 
-$(LIBT): $(OBJS)
+lib: $(OBJS)
 	@mkdir -p $(LDIR)
 	$(CC) -o $(LIBT) $(LFLAGS) $(OBJS) $(DBVS)/*.o
 	@echo "Built C3/trivalent database lib."
-
-$(RKVT): $(OBJS)
-	@mkdir -p $(LDIR)
 	@ar crs $(RKVT) $(OBJS) $(DBVS)/*.o
 	@ranlib $(RKVT)
 	@echo "Built C3/trivalent database archive."
