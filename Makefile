@@ -51,5 +51,5 @@ test:
 	@( cd tests && ./run.sh )
 
 testclean:
-	@rm -f tests/data/* tests/gmon.out
+	@rm -f tests/data/*.txt tests/data/*.c3db tests/gmon.out
 

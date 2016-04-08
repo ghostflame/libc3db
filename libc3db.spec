@@ -1,5 +1,5 @@
 Name:		libc3db
-Version:	0.1.1
+Version:	0.1.2
 Release:	1%{?dist}
 Summary:	A library for managing C3DB format time-series databases.
 
@@ -31,6 +31,13 @@ INCDIR=%{buildroot}%{_includedir} \
 DOCDIR=%{buildroot}%{_docdir}/libc3db \
 VERSION=%{version} \
 make install
+
+
+%post -p /sbin/ldconfig
+
+
+%postun -p /sbin/ldconfig
+
 
 %files
 %{_libdir}/libc3db.so

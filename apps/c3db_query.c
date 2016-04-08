@@ -1,3 +1,14 @@
+/**************************************************************************
+* This code is licensed under the Apache License 2.0.  See ../LICENSE     *
+* Copyright 2016 John Denholm                                             *
+*                                                                         *
+* c3db_query.c - Query a C3DB file from the command line                  *
+*                                                                         *
+* Updates:                                                                *
+**************************************************************************/
+
+
+
 #include <c3db.h>
 #include "tools.h"
 

@@ -1,3 +1,14 @@
+/**************************************************************************
+* This code is licensed under the Apache License 2.0.  See ../LICENSE     *
+* Copyright 2016 John Denholm                                             *
+*                                                                         *
+* utils.c - Non-versioned utilities and helper functions                  *
+*                                                                         *
+* Updates:                                                                *
+**************************************************************************/
+
+
+
 /* NO VERSION-SPECIFIC CODE IN HERE PLEASE */
 
 #include "c3_internal.h"

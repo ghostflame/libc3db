@@ -1,3 +1,14 @@
+/**************************************************************************
+* This code is licensed under the Apache License 2.0.  See ../LICENSE     *
+* Copyright 2016 John Denholm                                             *
+*                                                                         *
+* c3_internal.h - Definitions and structures used within the library      *
+*                                                                         *
+* Updates:                                                                *
+**************************************************************************/
+
+
+
 #ifndef C3DB_INT_H
 #define C3DB_INT_H
 

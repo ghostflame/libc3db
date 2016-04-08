@@ -1,5 +1,5 @@
 .\" Libc3db manual page
-.TH LIBC3DB "3" "Dec 2015"
+.TH LIBC3DB "3" "Apr 2016"
 .SH NAME
 libc3db \- time-series database
 .SH SYNOPSIS
@@ -18,9 +18,9 @@ libc3db \- time-series database
 .nf
 \fBint c3db_read_ts( C3HDL *\fIh\fB, struct timespec \fIfrom\fB, struct timespec \fIto\fB, int \fImetric\fB, C3RES *\fIres\fB );\fP
 .nf
-\fBint c3db_read_us( C3HDL *\fIh\fB, uint64_t \fIfrom\fB, uint64_t \fIto\fB, int \fImetric\fB, C3RES *\fIres\fB );\fP
+\fBint c3db_read_us( C3HDL *\fIh\fB, int64_t \fIfrom\fB, int64_t \fIto\fB, int \fImetric\fB, C3RES *\fIres\fB );\fP
 .nf
-\fBint c3db_read_ns( C3HDL *\fIh\fB, uint64_t \fIfrom\fB, uint64_t \fIto\fB, int \fImetric\fB, C3RES *\fIres\fB );\fP
+\fBint c3db_read_ns( C3HDL *\fIh\fB, int64_t \fIfrom\fB, int64_t \fIto\fB, int \fImetric\fB, C3RES *\fIres\fB );\fP
 
 \fBint c3db_write( C3HDL *\fIh\fB, int \fIcount\fB, C3PNT *\fIpoints\fB );\fB
 .nf
@@ -47,9 +47,12 @@ libc3db \- time-series database
 
 
 .SH DESCRIPTION
+.PP
+Coming soon.
 
 .SH BUGS
 
 .SH SEE ALSO
 
 .SH AUTHOR
+\fBLibc3db\fP is written and maintained by John Denholm, Sky Betting And Gaming.

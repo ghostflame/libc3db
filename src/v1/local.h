@@ -1,3 +1,14 @@
+/**************************************************************************
+* This code is licensed under the Apache License 2.0.  See ../LICENSE     *
+* Copyright 2016 John Denholm                                             *
+*                                                                         *
+* local.h - V1-specific fns and structures                                *
+*                                                                         *
+* Updates:                                                                *
+**************************************************************************/
+
+
+
 #ifndef C3DB_VERSION_1_H
 #define C3DB_VERSION_1_H
 

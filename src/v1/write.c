@@ -1,3 +1,13 @@
+/**************************************************************************
+* This code is licensed under the Apache License 2.0.  See ../LICENSE     *
+* Copyright 2016 John Denholm                                             *
+*                                                                         *
+* write.c - V1-specific C3DB file update                                  *
+*                                                                         *
+* Updates:                                                                *
+**************************************************************************/
+
+
 #include "../c3_internal.h"
 
 

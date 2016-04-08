@@ -1,3 +1,14 @@
+/**************************************************************************
+* This code is licensed under the Apache License 2.0.  See ../LICENSE     *
+* Copyright 2016 John Denholm                                             *
+*                                                                         *
+* actions.c - wrappers for versioned action functions                     *
+*                                                                         *
+* Updates:                                                                *
+**************************************************************************/
+
+
+
 #include "c3_internal.h"
 
 
