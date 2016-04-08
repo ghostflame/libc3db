@@ -38,7 +38,6 @@ install:
 	@ln -s $(LIBDIR)/libc3db.so.$(VERSION) $(LIBDIR)/libc3db.so.$(VMAJ)
 	@gzip -c dist/libc3db.3 > $(MANDIR)/man3/libc3db.3.gz
 	@install -m644 LICENSE BUGS README.md dist/db_format.txt $(DOCDIR)
-	@ldconfig
 
 uninstall:
 	@echo "Warning: this may conflict with an RPM install!"
