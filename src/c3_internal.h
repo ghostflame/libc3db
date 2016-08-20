@@ -34,7 +34,7 @@
 typedef int  c3_open_f   ( C3HDL * );
 typedef int  c3_create_f ( C3HDL *, char * );
 typedef int  c3_close_f  ( C3HDL * );
-typedef int  c3_read_f   ( C3HDL *, int64_t, int64_t, int, C3RES * );
+typedef int  c3_read_f   ( C3HDL *, int64_t, int64_t, C3RES * );
 typedef int  c3_write_f  ( C3HDL *, int, C3PNT * );
 typedef int  c3_flush_f  ( C3HDL *, int * );
 typedef int  c3_dump_f   ( C3HDL *, FILE *, int, int );

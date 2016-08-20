@@ -30,7 +30,7 @@ int c3db_read_ns( C3HDL *h, int64_t from, int64_t to, int metric, C3RES *res )
 	memset( res, 0, sizeof( C3RES ) );
 	res->rtype = metric;
 
-	return (h->f_read)( h, from, to, metric, res );
+	return (h->f_read)( h, from, to, res );
 }
 
 
@@ -132,8 +132,8 @@ int c3db_close( C3HDL *h )
 		h->fd = -1;
 	}
 
-    if( h->map )
-        munmap( h->map, h->fsize );
+	if( h->map )
+		munmap( h->map, h->fsize );
 
 	// we probably have a path
 	if( h->fullpath )

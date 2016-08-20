@@ -177,7 +177,7 @@ __c3db_v1_parser *__c3db_v1_parser_fns[C3DB_REQ_END] = {
 
 
 
-int c3db_v1_read( C3HDL *h, int64_t from, int64_t to, int metric, C3RES *res )
+int c3db_v1_read( C3HDL *h, int64_t from, int64_t to, C3RES *res )
 {
 	__c3db_v1_parser *pfn;
 	struct timespec ts;
@@ -260,11 +260,12 @@ int c3db_v1_dump( C3HDL *h, FILE *to, int show_empty, int ts_fmt )
 	struct timespec ts;
 	struct timeval tv;
 	char *dfmt, *sfmt;
-	uint64_t c, t;
+	uint64_t t;
 	float mean;
 	V1HDR *hdr;
 	V1CFG *cfg;
 	V1BKT *bkt;
+	int64_t c;
 	int i;
 
 	char *dfmts[C3DB_TS_MAX] = {
