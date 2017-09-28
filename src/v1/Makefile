@@ -1,11 +1,11 @@
-CC     = /usr/bin/gcc -std=gnu99 -Wall -Wshadow -Wpedantic -Wno-pointer-arith -Wextra -Wno-unused-parameter
+CC     = /usr/bin/gcc -std=c11 -Wall -Wshadow -Wpedantic -Wno-pointer-arith -Wextra -Wno-unused-parameter -Wno-implicit-fallthrough
 
 NAME   = v1
 
 OBJS   = init.o read.o write.o utils.o
 OUT    = $(NAME).o
 
-IFLAGS = -I.
+IFLAGS = -I. -I..
 DFLAGS = -g -pg -ggdb3
 CFLAGS = $(IFLAGS) -shared -fPIC -DPIC
 

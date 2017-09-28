@@ -12,9 +12,14 @@
 #ifndef C3DB_INT_H
 #define C3DB_INT_H
 
+#define _GNU_SOURCE
+
+#include <time.h>
+#include <fcntl.h>
 #include <stdarg.h>
 #include <features.h>
 #include <sys/mman.h>
+
 #include "../include/c3db.h"
 
 #ifndef	Err

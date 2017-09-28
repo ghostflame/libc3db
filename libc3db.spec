@@ -1,12 +1,12 @@
 Name:		libc3db
-Version:	0.1.5
+Version:	0.1.6
 Release:	1%{?dist}
 Summary:	A library for managing C3DB format time-series databases.
 
 Group:		Applications/Internet
 License:	Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0.txt)
 URL:		https://github.com/ghostflame/libc3db
-Source:		https://github.com/ghostflame/libc3db/archive/%{version}.tar.gz
+Source:		libc3db-%{version}.tar.gz
 
 BuildRequires: gcc
 

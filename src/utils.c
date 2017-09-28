@@ -157,7 +157,7 @@ void *alloc3( size_t size )
 	void *p = calloc( 1, size );
 
 	if( !p )
-		return &mem_signal_array;
+		return (void *) &mem_signal_array;
 
 	return p;
 }

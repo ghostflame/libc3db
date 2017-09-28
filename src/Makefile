@@ -1,4 +1,4 @@
-CC     = /usr/bin/gcc -std=gnu99 -Wall -Wshadow -Wpedantic -Wextra
+CC     = /usr/bin/gcc -std=c11 -Wall -Wshadow -Wpedantic -Wextra
 
 LDIR   = ../lib
 IDIR   = ../include
